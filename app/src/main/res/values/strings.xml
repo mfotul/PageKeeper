@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">PageKeeper</string>
+    <string name="import_book">Import Book</string>
+    <string name="library">Library</string>
+    <string name="menu">Menu</string>
+    <string name="opened_book">Opened book</string>
+    <string name="remove_search_query">Remove search query</string>
+    <string name="search_books">Search books</string>
+    <string name="no_result_found">No result found</string>
+    <string name="close_menu">Close Menu</string>
+    <string name="library_label">Library</string>
+    <string name="favorites_label">Favorites</string>
+    <string name="finished_label">Finished</string>
+    <string name="ok">OK</string>
+    <string name="please_select_a_book_in_fb2_format">Please select a book in FB2 format.</string>
+    <string name="unsupported_file_format">Unsupported file format</string>
+    <string name="delete_one">Delete \"%s\"?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_more">Delete %d books?</string>
+    <string name="this_action_will_remove_the_book_from_your_library">This action will remove the book from your library.</string>
+    <string name="your_library_is_empty">Your library is empty</string>
+    <string name="import_your_first_book_to_start_building_your_library">Import your first book to start building your library</string>
+    <string name="your_favorites_is_empty">Your favorites is empty</string>
+    <string name="books_you_add_to_favorites_will_appears_here">Books you add to Favorites will appear here.</string>
+    <string name="books_you_mark_as_finished_will_appears_here">Books you mark as finished will appear here.</string>
+    <string name="your_finished_is_empty">Your finished is empty</string>
+    <string name="selected_items">%1$d selected</string>
+    <string name="share">Share</string>
+</resources>
