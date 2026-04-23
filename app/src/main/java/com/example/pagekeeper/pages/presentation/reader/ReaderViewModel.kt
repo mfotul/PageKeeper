@@ -59,7 +59,7 @@ class ReaderViewModel(
 
     fun onAction(action: ReaderAction) {
         when (action) {
-            ReaderAction.OnLockScreenClick -> TODO()
+            ReaderAction.OnLockScreenClick -> {}
         }
     }
 }
