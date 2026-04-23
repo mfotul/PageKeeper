@@ -1,4 +1,4 @@
-package com.example.pagekeeper.core.database.pages
+package com.example.pagekeeper.core.database.pages.library
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class BookEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    val bookId: Int = 0,
     val title: String,
     val author: String,
     val bookPath: String,

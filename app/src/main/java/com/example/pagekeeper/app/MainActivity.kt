@@ -5,8 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.pagekeeper.app.navigation.NavigationRoot
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
-import com.example.pagekeeper.pages.presentation.library.LibraryScreenRoot
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PageKeeperTheme {
-                LibraryScreenRoot()
+                NavigationRoot()
             }
         }
     }

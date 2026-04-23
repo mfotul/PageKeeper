@@ -8,6 +8,7 @@ import com.example.pagekeeper.pages.domain.library.LibraryStorage
 import com.example.pagekeeper.pages.domain.library.PageDataSource
 import com.example.pagekeeper.pages.domain.library.XmlParser
 import com.example.pagekeeper.pages.presentation.library.LibraryViewModel
+import com.example.pagekeeper.pages.presentation.reader.ReaderViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -19,4 +20,5 @@ val pagesModule = module {
     singleOf(::RoomPageDataSource) bind PageDataSource::class
 
     viewModelOf(::LibraryViewModel)
+    viewModelOf(::ReaderViewModel)
 }

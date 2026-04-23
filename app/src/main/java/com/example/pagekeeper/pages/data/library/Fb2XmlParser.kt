@@ -10,9 +10,19 @@ import com.example.pagekeeper.pages.domain.library.Book
 import com.example.pagekeeper.pages.domain.library.LibraryStorage
 import com.example.pagekeeper.pages.domain.library.PageDataSource
 import com.example.pagekeeper.pages.domain.library.XmlParser
+import com.example.pagekeeper.pages.domain.reader.BodyType
+import com.example.pagekeeper.pages.domain.reader.Fb2BlockElement
+import com.example.pagekeeper.pages.domain.reader.Fb2Section
+import com.example.pagekeeper.pages.domain.reader.Fb2Title
+import com.example.pagekeeper.pages.domain.reader.Section
+import com.example.pagekeeper.pages.domain.reader.StyledText
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
@@ -24,7 +34,8 @@ import java.util.UUID
 
 class Fb2XmlParser(
     private val libraryStorage: LibraryStorage,
-    private val pageDataSource: PageDataSource
+    private val pageDataSource: PageDataSource,
+    private val applicationScope: CoroutineScope
 ) : XmlParser {
     private data class Metadata(
         val title: String,
@@ -40,7 +51,7 @@ class Fb2XmlParser(
     )
 
     override suspend fun parseBook(uri: Uri): Result<Book, ParserError> {
-        return withContext(Dispatchers.Default) {
+        return withContext(Dispatchers.IO) {
             try {
                 val tempFilePath =
                     libraryStorage.saveBookTemporarily(uri) ?: return@withContext Result.Error(
@@ -63,19 +74,26 @@ class Fb2XmlParser(
                     val timestamp = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString()
                     val bookFileName = "${book.title}.${LibraryStorage.BOOK_EXTENSION}"
 
-                    libraryStorage.savePersistently(tempFilePath, parentPath, bookFileName)?.let { bookFilePath ->
-                        var imageFilePath: String? = null
+                    libraryStorage.savePersistently(tempFilePath, parentPath, bookFileName)
+                        ?.let { bookFilePath ->
+                            var imageFilePath: String? = null
 
-                        book.coverPath?.let { tempPath ->
-                            val imageFileName = "${LibraryStorage.PERSISTENT_IMAGE_PREFIX}-$timestamp.${LibraryStorage.IMAGE_EXTENSION}"
-                            imageFilePath = libraryStorage.savePersistently(tempPath, parentPath, imageFileName)
-                        }
+                            book.coverPath?.let { tempPath ->
+                                val imageFileName =
+                                    "${LibraryStorage.PERSISTENT_IMAGE_PREFIX}-$timestamp.${LibraryStorage.IMAGE_EXTENSION}"
+                                imageFilePath = libraryStorage.savePersistently(
+                                    tempPath,
+                                    parentPath,
+                                    imageFileName
+                                )
+                            }
 
-                        val newBook = book.copy(bookPath = bookFilePath, coverPath = imageFilePath)
-                        libraryStorage.cleanUpTemporaryFiles()
+                            val newBook =
+                                book.copy(bookPath = bookFilePath, coverPath = imageFilePath)
+                            libraryStorage.cleanUpTemporaryFiles()
 
-                        Result.Success(newBook)
-                    } ?: Result.Error(ParserError.IO_ERROR)
+                            Result.Success(newBook)
+                        } ?: Result.Error(ParserError.IO_ERROR)
 
                 } ?: Result.Error(ParserError.PARSING_ERROR)
             } catch (e: XmlPullParserException) {
@@ -96,6 +114,36 @@ class Fb2XmlParser(
                 file.parentFile?.deleteRecursively()
             } else
                 null
+        }
+    }
+
+    override suspend fun parseBookBodyFile(book: Book): Result<Unit, ParserError> {
+        return withContext(Dispatchers.IO) {
+            try {
+                if (book.bookPath == null) return@withContext Result.Error(ParserError.IO_ERROR)
+
+                val bookFile = File(book.bookPath)
+                if (!bookFile.exists()) return@withContext Result.Error(ParserError.IO_ERROR)
+
+                applicationScope.launch {
+                    bookFile.inputStream().buffered().use { bufferedStream ->
+                        val parser = Xml.newPullParser().apply {
+                            setInput(bufferedStream, null)
+                        }
+
+                        parser.next()
+                        parseBookBody(parser, book.bookId!!)
+                    }
+                }
+                Result.Success(Unit)
+            } catch (e: XmlPullParserException) {
+                Timber.e("Error parsing FB2 file: ${e.message}")
+                Result.Error(ParserError.PARSING_ERROR)
+            } catch (e: Exception) {
+                ensureActive()
+                Timber.e(e)
+                Result.Error(ParserError.UNKNOWN_ERROR)
+            }
         }
     }
 
@@ -124,6 +172,7 @@ class Fb2XmlParser(
                 addedAt = Instant.now(),
                 coverPath = coverPath,
                 bookPath = null,
+                sections = emptyList(),
                 documentId = metadata.documentId
             )
         }
@@ -244,6 +293,142 @@ class Fb2XmlParser(
             skip(parser)
 
         return imagePath
+    }
+
+    private suspend fun parseBookBody(parser: XmlPullParser, bookId: Int) {
+        parser.require(XmlPullParser.START_TAG, null, "FictionBook")
+
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) continue
+
+            when (parser.name) {
+                "body" -> parseBody(parser, bookId)
+                else -> skip(parser)
+            }
+        }
+    }
+
+    private suspend fun parseBody(parser: XmlPullParser, bookId: Int)  {
+        parser.require(XmlPullParser.START_TAG, null, "body")
+
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) continue
+
+            when (parser.name) {
+                "section" -> {
+                    val section = Section(
+                        bookId = bookId,
+                        body = BodyType.SECTION,
+                        section = parseSection(parser)
+                    )
+                    pageDataSource.insertSection(section)
+                }
+
+                "title" -> {
+                    val title = Section(
+                        bookId = bookId,
+                        body = BodyType.TITLE,
+                        title = parseTitle(parser)
+                    )
+                    pageDataSource.insertSection(title)
+                }
+                else -> skip(parser)
+            }
+        }
+    }
+
+    private fun parseSection(parser: XmlPullParser): Fb2Section {
+        parser.require(XmlPullParser.START_TAG, null, "section")
+        val content = mutableListOf<Fb2BlockElement>()
+        var title: Fb2Title? = null
+
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) continue
+
+            when (parser.name) {
+                "p" -> content.add(Fb2BlockElement.Paragraph(parseParagraph(parser, "p")))
+                "subtitle" -> content.add(Fb2BlockElement.Subtitle(parseParagraph(parser, "subtitle")))
+                "title" -> title = parseTitle(parser)
+                "empty-line" -> content.add(parseEmptyLine(parser))
+                "epigraph" -> content.add(parseEpigraph(parser, "epigraph"))
+                "cite" -> content.add(parseEpigraph(parser, "cite"))
+                else -> skip(parser)
+            }
+        }
+        return Fb2Section(content = content, title = title)
+    }
+
+    private fun parseTitle(parser: XmlPullParser): Fb2Title? {
+        parser.require(XmlPullParser.START_TAG, null, "title")
+        val title = mutableListOf<List<StyledText>>()
+
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) continue
+
+            when (parser.name) {
+                "p" -> title.add(parseParagraph(parser, "p"))
+                else -> skip(parser)
+            }
+        }
+        return if (title.isNotEmpty()) Fb2Title(title) else null
+    }
+
+    private fun parseEpigraph(parser: XmlPullParser, name: String): Fb2BlockElement {
+        parser.require(XmlPullParser.START_TAG, null, name)
+
+        val lines = mutableListOf<List<StyledText>>()
+        var author: List<StyledText>? = null
+
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) continue
+
+            when (parser.name) {
+                "p" -> lines.add(parseParagraph(parser, "p"))
+                "text-author" -> author = parseParagraph(parser, "text-author")
+            }
+        }
+        return Fb2BlockElement.Cite(lines = lines, author = author)
+    }
+
+    private fun parseParagraph(parser: XmlPullParser, name: String): List<StyledText> {
+        parser.require(XmlPullParser.START_TAG, null, name)
+
+        val result = mutableListOf<StyledText>()
+        var isBold = false
+        var isItalic = false
+
+        while (!(parser.next() == XmlPullParser.END_TAG && parser.name == name)) {
+            when (parser.eventType) {
+                XmlPullParser.TEXT -> result.add(
+                    StyledText(
+                        text = parser.text,
+                        isBold = isBold,
+                        isItalic = isItalic
+                    )
+                )
+
+                XmlPullParser.START_TAG -> {
+                    when (parser.name) {
+                        "strong" -> isBold = true
+                        "emphasis" -> isItalic = true
+                    }
+                }
+
+                XmlPullParser.END_TAG -> {
+                    when (parser.name) {
+                        "strong" -> isBold = false
+                        "emphasis" -> isItalic = false
+                    }
+                }
+            }
+        }
+        return result
+    }
+
+    private fun parseEmptyLine(parser: XmlPullParser): Fb2BlockElement {
+        parser.require(XmlPullParser.START_TAG, null, "empty-line")
+        parser.nextTag()
+        return Fb2BlockElement.EmptyLine
     }
 
     private fun skip(parser: XmlPullParser) {

@@ -153,13 +153,15 @@ class LibraryViewModel(
 
     private fun onBookClick(bookId: Int) {
         viewModelScope.launch {
-            if (state.value.screenType != ScreenType.SELECTED) return@launch
+            if (state.value.screenType == ScreenType.SELECTED)
             pageDataSource
                 .observeBookById(bookId)
                 .firstOrNull()
                 ?.let { book ->
                     pageDataSource.upsertBook(book.copy(isSelected = !book.isSelected))
                 }
+            else
+                eventChannel.send(LibraryEvent.OnBookSelected(bookId))
         }
     }
 
@@ -240,6 +242,7 @@ class LibraryViewModel(
                                 ?.let {
                                     xmlParser.deleteBook(it) ?: Timber.e("Unable delete file: $it")
                                 }
+                            pageDataSource.deleteSections(book.sections)
                         }
                         pageDataSource.deleteBook(books)
                     }

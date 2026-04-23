@@ -1,8 +1,11 @@
 package com.example.pagekeeper.pages.data.library
 
-import com.example.pagekeeper.core.database.pages.PageDao
+import com.example.pagekeeper.core.database.pages.library.PageDao
+import com.example.pagekeeper.pages.data.reader.toSection
+import com.example.pagekeeper.pages.data.reader.toSectionEntity
 import com.example.pagekeeper.pages.domain.library.Book
 import com.example.pagekeeper.pages.domain.library.PageDataSource
+import com.example.pagekeeper.pages.domain.reader.Section
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -38,10 +41,10 @@ class RoomPageDataSource(
             }
     }
 
-    override fun observeBookById(id: Int): Flow<Book> {
+    override fun observeBookById(id: Int): Flow<Book?> {
         return pageDao
             .observeBookById(id)
-            .map { it.toBook() }
+            .map { it?.toBook() }
     }
 
     override fun observeBooksByIds(ids: List<Int>): Flow<List<Book>> {
@@ -76,5 +79,13 @@ class RoomPageDataSource(
         pageDao.deleteBook(
             book.map { it.toBookEntity() }
         )
+    }
+
+    override suspend fun insertSection(section: Section) {
+        pageDao.insertSection(section.toSectionEntity())
+    }
+
+    override suspend fun deleteSections(sections: List<Section>) {
+        pageDao.deleteSections(sections.map { it.toSectionEntity() })
     }
 }

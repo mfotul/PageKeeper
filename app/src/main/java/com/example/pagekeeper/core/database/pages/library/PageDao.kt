@@ -1,9 +1,13 @@
-package com.example.pagekeeper.core.database.pages
+package com.example.pagekeeper.core.database.pages.library
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
+import com.example.pagekeeper.core.database.book_section_relation.BookWithSection
+import com.example.pagekeeper.core.database.pages.reader.SectionEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -21,11 +25,13 @@ interface PageDao {
     @Query("SELECT * FROM bookentity WHERE isFinished=1 ORDER BY addedAt DESC")
     fun observeFinishedBooks(): Flow<List<BookEntity>>
 
-    @Query("SELECT * FROM bookentity WHERE id=:id")
-    fun observeBookById(id: Int): Flow<BookEntity>
+    @Transaction
+    @Query("SELECT * FROM bookentity WHERE bookId=:id")
+    fun observeBookById(id: Int): Flow<BookWithSection?>
 
-    @Query("SELECT * FROM bookentity WHERE id IN (:ids)")
-    fun observeBooksByIds(ids: List<Int>): Flow<List<BookEntity>>
+    @Transaction
+    @Query("SELECT * FROM bookentity WHERE bookId IN (:ids)")
+    fun observeBooksByIds(ids: List<Int>): Flow<List<BookWithSection>>
 
     @Query("SELECT documentId FROM bookentity")
     fun observeDocumentsId(): Flow<List<String>>
@@ -46,6 +52,11 @@ interface PageDao {
     suspend fun upsertBook(book: BookEntity)
 
     @Delete
-    suspend fun deleteBook(book: List<BookEntity>)
+    suspend fun deleteBook(books: List<BookEntity>)
 
+    @Insert
+    suspend fun insertSection(section: SectionEntity)
+
+    @Delete
+    suspend fun deleteSections(sections: List<SectionEntity>)
 }

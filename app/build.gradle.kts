@@ -17,7 +17,7 @@ android {
     defaultConfig {
         applicationId = "com.example.pagekeeper"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
@@ -74,6 +74,11 @@ dependencies {
     implementation(libs.room.ktx)
     implementation(libs.androidx.material3)
     ksp(libs.room.compiler)
+
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -55,6 +55,7 @@ import java.io.File
 
 @Composable
 fun LibraryScreenRoot(
+    onBookSelected: (Int) -> Unit,
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -90,6 +91,7 @@ fun LibraryScreenRoot(
                     context.startActivity(Intent.createChooser(shareIntent, null))
                 }
 
+                is LibraryEvent.OnBookSelected -> onBookSelected(event.bookId)
             }
         }
     }

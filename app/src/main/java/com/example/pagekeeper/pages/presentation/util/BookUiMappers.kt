@@ -5,7 +5,7 @@ import com.example.pagekeeper.pages.presentation.models.BookUi
 
 fun Book.toBookUi(): BookUi {
     return BookUi(
-        id = id!!,
+        id = bookId!!,
         bookCoverPath = coverPath,
         bookTitle = title,
         authorName = author,

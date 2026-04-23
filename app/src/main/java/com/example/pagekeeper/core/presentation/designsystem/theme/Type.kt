@@ -4,6 +4,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.pagekeeper.R
@@ -80,6 +81,37 @@ val Typography = Typography(
         lineHeight = 16.sp,
         letterSpacing = 0.sp,
     ),
-
-
 )
+
+val Typography.chapterTitle: TextStyle
+    get() = TextStyle(
+        fontFamily = Lora,
+        fontWeight = FontWeight.Bold,
+        fontSize = 25.sp,
+        lineHeight = 30.sp
+    )
+
+val Typography.paragraphRegular: TextStyle
+    get() = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.Normal,
+        fontSize = 18.sp,
+        lineHeight = 24.sp
+    )
+
+val Typography.paragraphBold: TextStyle
+    get() = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 18.sp,
+        lineHeight = 24.sp
+    )
+
+val Typography.paragraphItalic: TextStyle
+    get() = TextStyle(
+        fontFamily = Inter,
+        fontWeight = FontWeight.Normal,
+        fontStyle = FontStyle.Italic,
+        fontSize = 18.sp,
+        lineHeight = 24.sp
+    )

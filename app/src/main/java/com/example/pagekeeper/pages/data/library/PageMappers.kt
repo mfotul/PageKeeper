@@ -1,13 +1,15 @@
 package com.example.pagekeeper.pages.data.library
 
-import com.example.pagekeeper.core.database.pages.BookEntity
+import com.example.pagekeeper.core.database.book_section_relation.BookWithSection
+import com.example.pagekeeper.core.database.pages.library.BookEntity
+import com.example.pagekeeper.pages.data.reader.toSection
 import com.example.pagekeeper.pages.domain.library.Book
 import java.time.Instant
 
 
 fun Book.toBookEntity(): BookEntity {
     return BookEntity(
-        id = id ?: 0,
+        bookId = bookId ?: 0,
         title = title,
         author = author,
         bookPath = bookPath ?: "",
@@ -22,7 +24,7 @@ fun Book.toBookEntity(): BookEntity {
 
 fun BookEntity.toBook(): Book {
     return Book(
-        id = id,
+        bookId = bookId,
         title = title,
         author = author,
         bookPath = bookPath,
@@ -31,6 +33,23 @@ fun BookEntity.toBook(): Book {
         isFavorite = isFavorite,
         isFinished = isFinished,
         isSelected = isSelected,
-        addedAt = Instant.ofEpochMilli(addedAt)
+        addedAt = Instant.ofEpochMilli(addedAt),
+        sections = emptyList()
+    )
+}
+
+fun BookWithSection.toBook(): Book {
+    return Book(
+        bookId = book.bookId,
+        title = book.title,
+        author = book.author,
+        bookPath = book.bookPath,
+        coverPath = book.coverPath,
+        documentId = book.documentId,
+        isFavorite = book.isFavorite,
+        isFinished = book.isFinished,
+        isSelected = book.isSelected,
+        addedAt = Instant.ofEpochMilli(book.addedAt),
+        sections = sections.map { it.toSection() }
     )
 }

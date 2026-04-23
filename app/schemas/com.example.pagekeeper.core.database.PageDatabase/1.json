@@ -2,15 +2,15 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "76393f378adf496b060ad216a9c3fc68",
+    "identityHash": "57e82a62a9a847ba204b19ecfe59bf88",
     "entities": [
       {
         "tableName": "BookEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `author` TEXT NOT NULL, `bookPath` TEXT NOT NULL, `coverPath` TEXT, `documentId` TEXT NOT NULL, `isFavorite` INTEGER NOT NULL, `isFinished` INTEGER NOT NULL, `isSelected` INTEGER NOT NULL, `addedAt` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`bookId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `author` TEXT NOT NULL, `bookPath` TEXT NOT NULL, `coverPath` TEXT, `documentId` TEXT NOT NULL, `isFavorite` INTEGER NOT NULL, `isFinished` INTEGER NOT NULL, `isSelected` INTEGER NOT NULL, `addedAt` INTEGER NOT NULL)",
         "fields": [
           {
-            "fieldPath": "id",
-            "columnName": "id",
+            "fieldPath": "bookId",
+            "columnName": "bookId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -71,14 +71,50 @@
         "primaryKey": {
           "autoGenerate": true,
           "columnNames": [
-            "id"
+            "bookId"
+          ]
+        }
+      },
+      {
+        "tableName": "SectionEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sectionId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `bookId` INTEGER NOT NULL, `body` TEXT NOT NULL, `content` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "sectionId",
+            "columnName": "sectionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bookId",
+            "columnName": "bookId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "body",
+            "columnName": "body",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "content",
+            "columnName": "content",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "sectionId"
           ]
         }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '76393f378adf496b060ad216a9c3fc68')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '57e82a62a9a847ba204b19ecfe59bf88')"
     ]
   }
 }
