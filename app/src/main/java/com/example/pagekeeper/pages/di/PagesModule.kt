@@ -1,6 +1,5 @@
 package com.example.pagekeeper.pages.di
 
-import com.example.pagekeeper.app.MainViewModel
 import com.example.pagekeeper.pages.data.library.Fb2XmlParser
 import com.example.pagekeeper.pages.data.library.InternalLibraryStorage
 import com.example.pagekeeper.pages.data.library.RoomPageDataSource

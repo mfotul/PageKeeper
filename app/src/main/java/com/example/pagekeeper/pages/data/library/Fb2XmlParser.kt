@@ -18,8 +18,6 @@ import com.example.pagekeeper.pages.domain.reader.Section
 import com.example.pagekeeper.pages.domain.reader.StyledText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch

@@ -1,7 +1,6 @@
 package com.example.pagekeeper.pages.data.library
 
 import com.example.pagekeeper.core.database.pages.library.PageDao
-import com.example.pagekeeper.pages.data.reader.toSection
 import com.example.pagekeeper.pages.data.reader.toSectionEntity
 import com.example.pagekeeper.pages.domain.library.Book
 import com.example.pagekeeper.pages.domain.library.PageDataSource

@@ -1,20 +1,15 @@
 package com.example.pagekeeper.pages.presentation.reader.components
 
-import android.widget.Space
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.magnifier
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pagekeeper.core.presentation.designsystem.theme.paragraphItalic
@@ -32,7 +27,7 @@ fun ReaderSection(
     ) {
         val borderColor = MaterialTheme.colorScheme.outline
 
-        fB2SectionUi?.content?.forEachIndexed { index, element ->
+        fB2SectionUi?.content?.forEach { element ->
             when (element) {
                 is Fb2BlockElementUi.Cite -> {
                     Column(
