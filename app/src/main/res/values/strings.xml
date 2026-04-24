@@ -27,4 +27,11 @@
     <string name="your_finished_is_empty">Your finished is empty</string>
     <string name="selected_items">%1$d selected</string>
     <string name="share">Share</string>
+    <string name="back">Back</string>
+    <string name="lock_screen_rotation">Lock to landscape</string>
+    <string name="unlock_screen_rotation">Unlock screen rotation</string>
+    <string name="landscape">Landscape</string>
+    <string name="auto_rotate">Auto Rotate</string>
+    <string name="font_size_setting">Font size settings</string>
+    <string name="font_size">Font Size</string>
 </resources>

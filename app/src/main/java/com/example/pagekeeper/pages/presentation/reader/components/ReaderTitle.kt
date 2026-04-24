@@ -7,8 +7,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 import com.example.pagekeeper.core.presentation.designsystem.theme.chapterTitle
 import com.example.pagekeeper.pages.presentation.reader.models.Fb2TitleUi
 
@@ -27,8 +31,22 @@ fun ReaderTitle(
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp)
+                    .padding(bottom = 16.dp)
             )
         }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF)
+@Composable
+private fun ReaderTitlePreview() {
+    PageKeeperTheme {
+        ReaderTitle(
+            fB2TitleUi = Fb2TitleUi(
+                lines = listOf(
+                    AnnotatedString(text = "Chapter 1")
+                )
+            )
+        )
     }
 }

@@ -5,6 +5,8 @@ import com.example.pagekeeper.pages.presentation.reader.models.SectionUi
 
 @Stable
 data class ReaderState(
-    val isLoading: Boolean = false,
+    val areBarsVisible: Boolean = false,
+    val bookName: String = "",
+    val isAutRotate: Boolean = true,
     val sections: List<SectionUi> = emptyList()
 )

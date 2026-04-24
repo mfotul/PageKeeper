@@ -12,22 +12,12 @@ import com.example.pagekeeper.R
 val Inter = FontFamily(
     Font(
         resId = R.font.inter_variable,
-        weight = FontWeight.Normal,
     ),
-    Font(
-        resId = R.font.inter_variable,
-        weight = FontWeight.Medium,
-    )
 )
 
 val Lora = FontFamily(
     Font(
         resId = R.font.lora_variable,
-        weight = FontWeight.Bold,
-    ),
-    Font(
-        resId = R.font.lora_variable,
-        weight = FontWeight.Medium,
     ),
 )
 

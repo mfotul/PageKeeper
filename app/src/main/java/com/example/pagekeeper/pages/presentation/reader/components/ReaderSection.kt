@@ -10,24 +10,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 import com.example.pagekeeper.core.presentation.designsystem.theme.paragraphItalic
 import com.example.pagekeeper.core.presentation.designsystem.theme.paragraphRegular
+import com.example.pagekeeper.pages.presentation.preview.PreviewModel
 import com.example.pagekeeper.pages.presentation.reader.models.Fb2BlockElementUi
-import com.example.pagekeeper.pages.presentation.reader.models.Fb2SectionUi
 
 @Composable
 fun ReaderSection(
-    fB2SectionUi: Fb2SectionUi?,
+    content: List<Fb2BlockElementUi>?,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
+            .padding(bottom = 16.dp)
     ) {
         val borderColor = MaterialTheme.colorScheme.outline
 
-        fB2SectionUi?.content?.forEach { element ->
+        content?.forEach { element ->
             when (element) {
                 is Fb2BlockElementUi.Cite -> {
                     Column(
@@ -86,5 +89,15 @@ fun ReaderSection(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF)
+@Composable
+private fun ReaderSectionPreview() {
+    PageKeeperTheme {
+        ReaderSection(
+            PreviewModel.section[0].section?.content
+        )
     }
 }

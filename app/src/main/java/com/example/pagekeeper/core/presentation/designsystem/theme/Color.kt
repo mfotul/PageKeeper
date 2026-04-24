@@ -14,6 +14,7 @@ val Divider = Color(0xFFE1DDD0)
 val StateFinished = Color(0xFF14AF62)
 val StateAlert = Color(0xFFDC362E)
 val TabletBlockBackground = Color(0xFFF1EBDF)
+val BgBottomNav = Color(0xFFF4F1E6)
 
 val ColorScheme.icons: Color
     get() = Icons
@@ -23,3 +24,6 @@ val ColorScheme.stateFinished: Color
 
 val ColorScheme.tabletBlockBackground: Color
     get() = TabletBlockBackground
+
+val ColorScheme.bgBottomNav: Color
+    get() = BgBottomNav

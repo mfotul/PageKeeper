@@ -35,6 +35,9 @@ fun NavigationRoot(
             }
             entry<NavigationRoute.ReaderScreen> { route ->
                 ReaderScreenRoot(
+                    onBackClick = {
+                        backStack.removeLastOrNull()
+                    },
                     viewModel = koinViewModel { parametersOf(route.bookId) }
                 )
             }

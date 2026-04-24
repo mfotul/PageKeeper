@@ -6,13 +6,16 @@ import com.example.pagekeeper.core.domain.util.onError
 import com.example.pagekeeper.pages.domain.library.PageDataSource
 import com.example.pagekeeper.pages.domain.library.XmlParser
 import com.example.pagekeeper.pages.presentation.util.toSectionUi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class ReaderViewModel(
@@ -35,6 +38,9 @@ class ReaderViewModel(
             ReaderState()
         )
 
+    private val eventChannel = Channel<ReaderEvent>()
+    val events = eventChannel.receiveAsFlow()
+
     private fun loadInitialData() {
         pageDataSource
             .observeBookById(bookId)
@@ -49,6 +55,7 @@ class ReaderViewModel(
                     else
                         _state.update { state ->
                             state.copy(
+                                bookName = book.title,
                                 sections = book.sections.map { it.toSectionUi() }
                             )
                         }
@@ -59,7 +66,27 @@ class ReaderViewModel(
 
     fun onAction(action: ReaderAction) {
         when (action) {
-            ReaderAction.OnLockScreenClick -> {}
+            ReaderAction.OnLockScreenClick -> onLockScreen()
+            ReaderAction.OnBackClick -> {}
+            ReaderAction.OnFavoritesClick -> {}
+            ReaderAction.OnScreenClick -> onScreenClick()
+            ReaderAction.OnFontSizeClick -> {}
+        }
+    }
+
+    private fun onLockScreen() {
+        viewModelScope.launch {
+            eventChannel.send(ReaderEvent.OnDeviceScreenLock)
+            _state.update {
+                it.copy(isAutRotate = !it.isAutRotate)
+
+            }
+        }
+    }
+
+    private fun onScreenClick() {
+        _state.update {
+            it.copy(areBarsVisible = !it.areBarsVisible)
         }
     }
 }
