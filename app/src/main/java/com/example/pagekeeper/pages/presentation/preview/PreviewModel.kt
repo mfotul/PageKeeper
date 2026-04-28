@@ -1,6 +1,8 @@
 package com.example.pagekeeper.pages.presentation.preview
 
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontStyle
 import com.example.pagekeeper.pages.domain.reader.BodyType
 import com.example.pagekeeper.pages.presentation.models.BookUi
 import com.example.pagekeeper.pages.presentation.reader.models.Fb2BlockElementUi
@@ -57,7 +59,7 @@ data object PreviewModel {
                     ),
                     Fb2BlockElementUi.Cite(
                         lines = listOf(
-                            AnnotatedString(text = "First line"),
+                            AnnotatedString(text = "First line", spanStyle = SpanStyle(fontStyle = FontStyle.Italic)),
                             AnnotatedString(text = "Second line"),
                             AnnotatedString(text = "Third line")
                         ),

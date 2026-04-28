@@ -47,14 +47,12 @@ fun ReaderSection(
                     ) {
                         element.lines.forEach {
                             Text(
-                                text = it.text,
-                                style = MaterialTheme.typography.paragraphItalic
+                                text = it,
                             )
                         }
                         element.author?.let {
                             Text(
-                                text = it.text,
-                                style = MaterialTheme.typography.paragraphRegular,
+                                text = it,
                                 color = MaterialTheme.colorScheme.onSecondary,
                                 modifier = Modifier
                                     .padding(top = 8.dp)

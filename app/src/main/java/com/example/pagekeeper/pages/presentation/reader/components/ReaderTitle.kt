@@ -25,8 +25,7 @@ fun ReaderTitle(
     ) {
         fB2TitleUi?.lines?.forEach {
             Text(
-                text = it.text,
-                style = MaterialTheme.typography.chapterTitle,
+                text = it,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()

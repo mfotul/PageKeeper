@@ -15,6 +15,8 @@ val StateFinished = Color(0xFF14AF62)
 val StateAlert = Color(0xFFDC362E)
 val TabletBlockBackground = Color(0xFFF1EBDF)
 val BgBottomNav = Color(0xFFF4F1E6)
+val LoaderMain = Color(0xFF8C7851)
+val LoaderSecondary = Color(0xFFE8E4D8)
 
 val ColorScheme.icons: Color
     get() = Icons
@@ -27,3 +29,6 @@ val ColorScheme.tabletBlockBackground: Color
 
 val ColorScheme.bgBottomNav: Color
     get() = BgBottomNav
+
+val ColorScheme.loaderSecondary: Color
+    get() = LoaderSecondary

@@ -20,7 +20,7 @@ import com.example.pagekeeper.core.presentation.designsystem.theme.bgBottomNav
 import com.example.pagekeeper.core.presentation.designsystem.theme.icons
 
 @Composable
-fun ReaderBottomBar(
+fun ReaderBottomButtons(
     isAutoRotate: Boolean,
     isVisible: Boolean,
     onRotateClick: () -> Unit,
@@ -92,9 +92,9 @@ fun ReaderBottomBar(
 
 @Preview
 @Composable
-private fun ReaderBottomBarPreview() {
+private fun ReaderBottomButtonsPreview() {
     PageKeeperTheme {
-        ReaderBottomBar(
+        ReaderBottomButtons(
             isAutoRotate = false,
             isVisible = true,
             onRotateClick = {},

@@ -34,4 +34,6 @@
     <string name="auto_rotate">Auto Rotate</string>
     <string name="font_size_setting">Font size settings</string>
     <string name="font_size">Font Size</string>
+    <string name="increase_font_size">Increase font size</string>
+    <string name="decrease_font_size">Decrease font size</string>
 </resources>

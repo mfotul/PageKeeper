@@ -8,5 +8,8 @@ data class ReaderState(
     val areBarsVisible: Boolean = false,
     val bookName: String = "",
     val isAutRotate: Boolean = true,
+    val fontSize: Float? = null,
+    val fonSizeChangeCounter: Int = 0,
+    val isFontSliderVisible: Boolean = false,
     val sections: List<SectionUi> = emptyList()
 )
