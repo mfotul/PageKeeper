@@ -113,9 +113,10 @@ fun LibraryScreen(
     onAction: (LibraryAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val windowsSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val isTablet =
-        windowsSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
+        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
+                && windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
 
     LibraryNavigationDrawer(
         drawerState = drawerState,

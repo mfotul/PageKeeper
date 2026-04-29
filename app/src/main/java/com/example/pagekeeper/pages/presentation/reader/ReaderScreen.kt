@@ -95,6 +95,7 @@ fun ReaderScreen(
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val isTablet =
         windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+                && windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
 
     LaunchedEffect(state.fonSizeChangeCounter) {
         if (prevFontSize == Float.MIN_VALUE) return@LaunchedEffect
@@ -169,6 +170,7 @@ fun ReaderScreen(
                 Column(
                     modifier = Modifier
                         .widthIn(max = 600.dp)
+
                 ) {
                     when (section.body) {
                         BodyType.TITLE -> {
