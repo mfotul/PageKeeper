@@ -1,8 +1,5 @@
 package com.example.pagekeeper.pages.presentation.reader
 
-import androidx.compose.runtime.Stable
-import com.example.pagekeeper.pages.presentation.reader.models.SectionUi
-
 data class ReaderState(
     val areBarsVisible: Boolean = false,
     val bookName: String = "",
