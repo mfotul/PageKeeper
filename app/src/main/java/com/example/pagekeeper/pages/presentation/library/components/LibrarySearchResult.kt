@@ -30,6 +30,7 @@ import com.example.pagekeeper.pages.presentation.models.BookUi
 fun LibrarySearchResult(
     bookUis: List<BookUi>,
     isTablet: Boolean,
+    onClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val columns = GridCells.Fixed(if (isTablet) 2 else 1)
@@ -76,7 +77,8 @@ fun LibrarySearchResult(
             ) {
                 items(items = bookUis, key = { it.id }) { bookUi ->
                     LibrarySmallBookCard(
-                        bookUi = bookUi
+                        bookUi = bookUi,
+                        onClick = { onClick(bookUi.id) }
                     )
                 }
             }
@@ -90,7 +92,8 @@ private fun LibrarySearchResultPreview() {
         LibrarySearchResult(
 //            bookUis = PreviewModel.books,
             bookUis = emptyList(),
-            isTablet = false
+            isTablet = false,
+            onClick = {}
         )
     }
 }

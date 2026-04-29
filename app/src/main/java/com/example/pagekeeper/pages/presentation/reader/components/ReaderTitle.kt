@@ -42,7 +42,7 @@ private fun ReaderTitlePreview() {
                 lines = listOf(
                     AnnotatedString(text = "Chapter 1")
                 )
-            )
+            ),
         )
     }
 }

@@ -1,5 +1,6 @@
 package com.example.pagekeeper.pages.presentation.library.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,12 +25,14 @@ import com.example.pagekeeper.pages.presentation.preview.PreviewModel
 @Composable
 fun LibrarySmallBookCard(
     bookUi: BookUi,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
+            .clickable(onClick = onClick)
     ) {
         AsyncImage(
             model = bookUi.bookCoverPath,
@@ -64,7 +67,8 @@ fun LibrarySmallBookCard(
 private fun LibrarySmallBookCardPreview() {
     PageKeeperTheme {
         LibrarySmallBookCard(
-            bookUi = PreviewModel.books[0]
+            bookUi = PreviewModel.books[0],
+            onClick = {}
         )
     }
 }

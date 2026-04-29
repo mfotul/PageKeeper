@@ -44,6 +44,7 @@ import com.example.pagekeeper.pages.presentation.library.components.LibrarySearc
 import com.example.pagekeeper.pages.presentation.library.components.LibrarySearchResult
 import com.example.pagekeeper.pages.presentation.library.components.LibrarySearchTopAppBar
 import com.example.pagekeeper.pages.presentation.library.components.LibrarySelectedTopAppBar
+import com.example.pagekeeper.pages.presentation.library.components.LibrarySelectedTopRow
 import com.example.pagekeeper.pages.presentation.library.models.DialogType
 import com.example.pagekeeper.pages.presentation.library.models.Screen
 import com.example.pagekeeper.pages.presentation.library.models.ScreenType
@@ -131,8 +132,7 @@ fun LibraryScreen(
                                 title = getStringForScreen(state.screen),
                                 onMenuClick = { onAction(LibraryAction.OnMenuIconClick) },
                                 onSearchClick = { onAction(LibraryAction.OnSearchIconClick) },
-
-                                )
+                            )
 
                         ScreenType.SEARCH ->
                             LibrarySearchTopAppBar(
@@ -163,18 +163,30 @@ fun LibraryScreen(
                     isEnabled = isTablet
                 ) {
                     if (isTablet)
-                        LibrarySearchBar(
-                            textFieldState = searchFieldState,
-                            screenType = state.screenType,
-                            isTabletSearchBarEnabled = state.isTabletSearchBarEnabled,
-                            onSearchClick = { onAction(LibraryAction.OnSearchIconClick) },
-                            modifier = Modifier
-                                .padding(16.dp)
-                        )
+                        if (state.screenType == ScreenType.SELECTED)
+                            LibrarySelectedTopRow(
+                                onBackClick = { onAction(LibraryAction.OnBackClick) },
+                                onFavoriteClick = { onAction(LibraryAction.OnBooksFavoriteClick) },
+                                onShareClick = { onAction(LibraryAction.OnBooksShareClick) },
+                                onDeleteClick = { onAction(LibraryAction.OnBooksDeleteClick) },
+                                selectedItemsCount = state.books.count { it.isSelected }
+                            )
+                        else
+                            LibrarySearchBar(
+                                textFieldState = searchFieldState,
+                                screenType = state.screenType,
+                                isTabletSearchBarEnabled = state.isTabletSearchBarEnabled,
+                                onSearchClick = { onAction(LibraryAction.OnSearchIconClick) },
+                                modifier = Modifier
+                                    .padding(16.dp)
+                            )
                     if (state.screenType == ScreenType.SEARCH)
                         LibrarySearchResult(
                             bookUis = state.searchResult,
                             isTablet = isTablet,
+                            onClick = {
+                                onAction(LibraryAction.OnBookClick(it))
+                            }
                         )
                     else if (state.books.isNotEmpty())
                         LibraryList(
@@ -201,57 +213,57 @@ fun LibraryScreen(
                                 description = R.string.books_you_mark_as_finished_will_appears_here,
                             )
                         }
-            }
-
-
-            when (state.dialogType) {
-                DialogType.UNSUPPORTED_FORMAT ->
-                    LibraryDialog(
-                        title = stringResource(R.string.unsupported_file_format),
-                        description = stringResource(R.string.please_select_a_book_in_fb2_format),
-                        onConfirmClick = { onAction(LibraryAction.OnDialogCloseClick) },
-                        onDismiss = { onAction(LibraryAction.OnDialogCloseClick) },
-                        confirmButton = stringResource(R.string.ok)
-                    )
-
-                DialogType.DELETE -> {
-                    val bookUi = state.booksPendingDeletion.first()
-                    val title = if (state.booksPendingDeletion.size == 1)
-                        stringResource(R.string.delete_one, bookUi.bookTitle)
-                    else
-                        stringResource(R.string.delete_more, state.booksPendingDeletion.size)
-
-                    LibraryDialog(
-                        title = title,
-                        description = stringResource(R.string.this_action_will_remove_the_book_from_your_library),
-                        confirmButton = stringResource(R.string.delete),
-                        cancelButton = stringResource(R.string.cancel),
-                        onConfirmClick = {
-                            onAction(LibraryAction.OnBookDeleteConfirmClick)
-                        },
-                        onCancelClick = { onAction(LibraryAction.OnDialogCloseClick) },
-                        onDismiss = { onAction(LibraryAction.OnDialogCloseClick) },
-                        isTextButtonRed = true
-                    )
                 }
 
 
-                DialogType.LOADING ->
-                    LibraryLoadingIndicator()
+                when (state.dialogType) {
+                    DialogType.UNSUPPORTED_FORMAT ->
+                        LibraryDialog(
+                            title = stringResource(R.string.unsupported_file_format),
+                            description = stringResource(R.string.please_select_a_book_in_fb2_format),
+                            onConfirmClick = { onAction(LibraryAction.OnDialogCloseClick) },
+                            onDismiss = { onAction(LibraryAction.OnDialogCloseClick) },
+                            confirmButton = stringResource(R.string.ok)
+                        )
 
-                DialogType.DUPLICATE_DOCUMENT ->
-                    LibraryDialog(
-                        title = "This book is already in your library.",
-                        confirmButton = stringResource(R.string.ok),
-                        onConfirmClick = { onAction(LibraryAction.OnDialogCloseClick) },
-                        onDismiss = { onAction(LibraryAction.OnDialogCloseClick) }
-                    )
+                    DialogType.DELETE -> {
+                        val bookUi = state.booksPendingDeletion.first()
+                        val title = if (state.booksPendingDeletion.size == 1)
+                            stringResource(R.string.delete_one, bookUi.bookTitle)
+                        else
+                            stringResource(R.string.delete_more, state.booksPendingDeletion.size)
 
-                DialogType.NONE -> {}
+                        LibraryDialog(
+                            title = title,
+                            description = stringResource(R.string.this_action_will_remove_the_book_from_your_library),
+                            confirmButton = stringResource(R.string.delete),
+                            cancelButton = stringResource(R.string.cancel),
+                            onConfirmClick = {
+                                onAction(LibraryAction.OnBookDeleteConfirmClick)
+                            },
+                            onCancelClick = { onAction(LibraryAction.OnDialogCloseClick) },
+                            onDismiss = { onAction(LibraryAction.OnDialogCloseClick) },
+                            isTextButtonRed = true
+                        )
+                    }
+
+
+                    DialogType.LOADING ->
+                        LibraryLoadingIndicator()
+
+                    DialogType.DUPLICATE_DOCUMENT ->
+                        LibraryDialog(
+                            title = "This book is already in your library.",
+                            confirmButton = stringResource(R.string.ok),
+                            onConfirmClick = { onAction(LibraryAction.OnDialogCloseClick) },
+                            onDismiss = { onAction(LibraryAction.OnDialogCloseClick) }
+                        )
+
+                    DialogType.NONE -> {}
+                }
             }
         }
     }
-}
 }
 
 private fun getFileProviderUri(context: Context, path: String): Uri {
@@ -289,7 +301,7 @@ private fun LibraryScreenPreview() {
             state = LibraryState(
                 books = PreviewModel.books,
 //                books = emptyList(),
-                screenType = ScreenType.SEARCH,
+                screenType = ScreenType.SELECTED,
                 dialogType = DialogType.NONE,
                 booksPendingDeletion = listOf(PreviewModel.books[0])
             ),

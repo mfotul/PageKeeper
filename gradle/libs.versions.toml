@@ -20,6 +20,7 @@ navCore3 = "1.1.1"
 lifecycleViewmodelNav3 = "2.10.0"
 kotlinxSerialization = "1.11.0"
 dataStore = "1.2.1"
+paging = "3.4.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -52,6 +53,9 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
+androidx-paging = {group = "androidx.paging", name = "paging-compose", version.ref = "paging"}
+
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navCore3" }

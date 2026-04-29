@@ -1,5 +1,6 @@
 package com.example.pagekeeper.core.database.pages.library
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -28,6 +29,10 @@ interface PageDao {
     @Transaction
     @Query("SELECT * FROM bookentity WHERE bookId=:id")
     fun observeBookById(id: Int): Flow<BookWithSection?>
+
+
+    @Query("SELECT * FROM sectionentity WHERE bookId=:id")
+    fun observeSectionsByBookIdPaginated(id: Int): PagingSource<Int, SectionEntity>
 
     @Transaction
     @Query("SELECT * FROM bookentity WHERE bookId IN (:ids)")

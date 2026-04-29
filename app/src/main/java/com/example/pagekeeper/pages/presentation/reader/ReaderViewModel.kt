@@ -6,7 +6,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
+import androidx.paging.map
+import com.example.pagekeeper.core.database.pages.library.PageDao
 import com.example.pagekeeper.core.domain.util.onError
+import com.example.pagekeeper.pages.data.reader.toSection
 import com.example.pagekeeper.pages.domain.library.PageDataSource
 import com.example.pagekeeper.pages.domain.library.XmlParser
 import com.example.pagekeeper.pages.domain.reader.ReaderPreferences
@@ -28,6 +34,7 @@ import timber.log.Timber
 class ReaderViewModel(
     private val bookId: Int,
     private val xmlParser: XmlParser,
+    private val pageDao: PageDao,
     private val pageDataSource: PageDataSource,
     private val readerPreferences: ReaderPreferences
 ) : ViewModel() {
@@ -36,9 +43,10 @@ class ReaderViewModel(
     private val _state = MutableStateFlow(ReaderState())
     val state = _state
         .onStart {
-            if (!hasLoadedInitialData)
+            if (!hasLoadedInitialData) {
                 observeSettings()
-            observerBookPages()
+                observerBook()
+            }
             hasLoadedInitialData = true
         }
         .stateIn(
@@ -46,6 +54,48 @@ class ReaderViewModel(
             SharingStarted.WhileSubscribed(5000L),
             ReaderState()
         )
+
+    val bookPager = state
+        .map { it.fonSizeChangeCounter }
+        .distinctUntilChanged()
+        .flatMapLatest {
+            Pager(
+                config = PagingConfig(pageSize = 1),
+                pagingSourceFactory = {
+                    pageDao
+                        .observeSectionsByBookIdPaginated(bookId)
+                }
+            ).flow
+        }
+        .map { pagingData ->
+            pagingData.map {
+                it.toSection().toSectionUi(fontSize = state.value.fontSize.sp)
+            }
+        }
+        .cachedIn(viewModelScope)
+
+    private fun observerBook() {
+        pageDataSource
+            .observeBookById(bookId)
+            .onEach { book ->
+                book?.let { book ->
+                    if (book.sections.isEmpty())
+                        viewModelScope.launch {
+                            xmlParser
+                                .parseBookBodyFile(book)
+                                .onError {
+                                    Timber.e("Error $it")
+                                }
+                        }
+                    _state.update { state ->
+                        state.copy(
+                            bookName = book.title
+                        )
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
+    }
 
     private fun observeSettings() {
         readerPreferences
@@ -57,38 +107,6 @@ class ReaderViewModel(
                         fonSizeChangeCounter = it.fonSizeChangeCounter + 1
                     )
                 }
-            }
-            .launchIn(viewModelScope)
-    }
-
-    private fun observerBookPages() {
-        state
-            .map { it.fonSizeChangeCounter }
-            .distinctUntilChanged()
-            .flatMapLatest {
-                pageDataSource
-                    .observeBookById(bookId)
-            }
-            .onEach { book ->
-                if (book == null) return@onEach
-                if (book.sections.isEmpty())
-                    viewModelScope.launch {
-                        xmlParser
-                            .parseBookBodyFile(book)
-                            .onError {
-                                Timber.e("Error $it")
-                            }
-                    }
-                else
-                    state.value.fontSize?.let { fontSize ->
-                        _state.update { state ->
-                            state.copy(
-                                bookName = book.title,
-                                sections = book.sections
-                                    .map { it.toSectionUi(fontSize = fontSize.sp) }
-                            )
-                        }
-                    }
             }
             .launchIn(viewModelScope)
     }

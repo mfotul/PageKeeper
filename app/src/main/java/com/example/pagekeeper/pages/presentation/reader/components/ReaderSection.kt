@@ -10,9 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 import com.example.pagekeeper.pages.presentation.preview.PreviewModel
 import com.example.pagekeeper.pages.presentation.reader.models.Fb2BlockElementUi
@@ -28,7 +28,7 @@ fun ReaderSection(
     ) {
         val borderColor = MaterialTheme.colorScheme.outline
 
-        content?.forEach { element ->
+        content?.forEachIndexed { index, element ->
             when (element) {
                 is Fb2BlockElementUi.Cite -> {
                     Column(
@@ -45,7 +45,7 @@ fun ReaderSection(
                     ) {
                         element.lines.forEach {
                             Text(
-                                text = it,
+                                text = it
                             )
                         }
                         element.author?.let {
@@ -67,8 +67,7 @@ fun ReaderSection(
 
                 is Fb2BlockElementUi.Paragraph -> {
                     Text(
-                        text = element.text,
-                        lineHeight = 24.sp
+                        text = element.text
                     )
                 }
 

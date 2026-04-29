@@ -23,6 +23,7 @@ import com.example.pagekeeper.core.presentation.designsystem.theme.icons
 fun ReaderBottomButtons(
     isAutoRotate: Boolean,
     isVisible: Boolean,
+    isTablet: Boolean,
     onRotateClick: () -> Unit,
     onFonSizeClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -31,42 +32,45 @@ fun ReaderBottomButtons(
         containerColor = MaterialTheme.colorScheme.bgBottomNav,
         contentColor = MaterialTheme.colorScheme.icons,
         modifier = modifier
-            .then(if (isVisible)
-                Modifier
-            else
-                Modifier
-                    .height(0.dp))
+            .then(
+                if (isVisible)
+                    Modifier
+                else
+                    Modifier
+                        .height(0.dp)
+            )
             .animateContentSize()
     ) {
-        NavigationBarItem(
-            selected = isAutoRotate,
-            onClick = onRotateClick,
-            icon = {
-                Icon(
-                    painter = painterResource(
-                        if (isAutoRotate) R.drawable.portrait
-                        else R.drawable.landscape
-                    ),
-                    contentDescription = stringResource(
-                        if (isAutoRotate) R.string.lock_screen_rotation
-                        else R.string.unlock_screen_rotation
+        if (!isTablet)
+            NavigationBarItem(
+                selected = isAutoRotate,
+                onClick = onRotateClick,
+                icon = {
+                    Icon(
+                        painter = painterResource(
+                            if (isAutoRotate) R.drawable.portrait
+                            else R.drawable.landscape
+                        ),
+                        contentDescription = stringResource(
+                            if (isAutoRotate) R.string.lock_screen_rotation
+                            else R.string.unlock_screen_rotation
+                        )
                     )
-                )
-            },
-            label = {
-                Text(
-                    text = stringResource(
-                        if (isAutoRotate) R.string.auto_rotate
-                        else R.string.landscape
+                },
+                label = {
+                    Text(
+                        text = stringResource(
+                            if (isAutoRotate) R.string.auto_rotate
+                            else R.string.landscape
+                        )
                     )
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.icons,
+                    indicatorColor = MaterialTheme.colorScheme.onSurface
                 )
-            },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.icons,
-                indicatorColor = MaterialTheme.colorScheme.onSurface
             )
-        )
         NavigationBarItem(
             selected = false,
             onClick = onFonSizeClick,
@@ -97,6 +101,7 @@ private fun ReaderBottomButtonsPreview() {
         ReaderBottomButtons(
             isAutoRotate = false,
             isVisible = true,
+            isTablet = false,
             onRotateClick = {},
             onFonSizeClick = {}
         )
