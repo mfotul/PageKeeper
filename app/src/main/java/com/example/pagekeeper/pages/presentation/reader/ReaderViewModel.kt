@@ -106,7 +106,6 @@ class ReaderViewModel(
         readerPreferences
             .observerFontSize()
             .onEach { newFontSize ->
-                println("TEST settings")
                 _state.update {
                     it.copy(
                         fontSize = newFontSize,
