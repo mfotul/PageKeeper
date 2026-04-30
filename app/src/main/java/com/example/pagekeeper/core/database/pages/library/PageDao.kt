@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import com.example.pagekeeper.core.database.book_section_relation.BookWithSection
+import com.example.pagekeeper.core.database.book_section_relation.BookWithSectionCountRoom
 import com.example.pagekeeper.core.database.pages.reader.SectionEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -49,6 +50,14 @@ interface PageDao {
         ORDER BY addedAt DESC
     """)
     fun searchBooksByTitle(search: String): Flow<List<BookEntity>>
+
+    @Query("""
+        SELECT *, 
+        (SELECT COUNT(*) FROM sectionentity WHERE bookId = :id) AS sectionCount 
+        FROM bookentity 
+        WHERE bookId = :id
+    """)
+    fun getBookTitleWithCount(id: Int): Flow<BookWithSectionCountRoom?>
 
     @Query("UPDATE bookentity SET isSelected=0")
     suspend fun removeSelected()

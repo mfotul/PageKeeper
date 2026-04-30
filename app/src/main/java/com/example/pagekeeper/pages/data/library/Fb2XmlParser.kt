@@ -115,9 +115,12 @@ class Fb2XmlParser(
         }
     }
 
-    override suspend fun parseBookBodyFile(book: Book): Result<Unit, ParserError> {
+    override suspend fun parseBookBodyFile(bookId: Int): Result<Unit, ParserError> {
         return withContext(Dispatchers.IO) {
             try {
+                val book = pageDataSource.observeBookById(bookId).firstOrNull()
+                    ?: return@withContext Result.Error(ParserError.IO_ERROR)
+
                 if (book.bookPath == null) return@withContext Result.Error(ParserError.IO_ERROR)
 
                 val bookFile = File(book.bookPath)

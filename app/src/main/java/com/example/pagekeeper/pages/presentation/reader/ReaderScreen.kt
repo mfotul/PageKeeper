@@ -25,7 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -91,21 +91,22 @@ fun ReaderScreen(
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
-    var prevFontSize by remember { mutableFloatStateOf(state.fontSize) }
+    var prevFontSize by remember { mutableStateOf(state.fontSize) }
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val isTablet =
         windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
                 && windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
 
     LaunchedEffect(state.fonSizeChangeCounter) {
-        if (prevFontSize == Float.MIN_VALUE) return@LaunchedEffect
-        val ratio = state.fontSize / prevFontSize
+        if (state.fontSize != null && prevFontSize != null) {
+            val ratio = state.fontSize / prevFontSize as Float
 
-        val currentIndex = listState.firstVisibleItemIndex
-        val currentOffset = listState.firstVisibleItemScrollOffset
+            val currentIndex = listState.firstVisibleItemIndex
+            val currentOffset = listState.firstVisibleItemScrollOffset
 
-        val newOffset = (currentOffset * ratio).toInt()
-        listState.animateScrollToItem(currentIndex, newOffset)
+            val newOffset = (currentOffset * ratio).toInt()
+            listState.animateScrollToItem(currentIndex, newOffset)
+        }
     }
 
     Scaffold(
@@ -119,7 +120,7 @@ fun ReaderScreen(
         },
         bottomBar = {
             Box {
-                if (state.isFontSliderVisible)
+                if (state.isFontSliderVisible && state.fontSize != null)
                     ReaderBottomSlider(
                         fontSize = state.fontSize,
                         onFontSizeSet = { newSize ->

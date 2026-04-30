@@ -4,6 +4,7 @@ import com.example.pagekeeper.core.database.pages.library.PageDao
 import com.example.pagekeeper.pages.data.reader.toSectionEntity
 import com.example.pagekeeper.pages.domain.library.Book
 import com.example.pagekeeper.pages.domain.library.PageDataSource
+import com.example.pagekeeper.pages.domain.reader.BookWithSectionCount
 import com.example.pagekeeper.pages.domain.reader.Section
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -63,6 +64,14 @@ class RoomPageDataSource(
             .searchBooksByTitle(search)
             .map { books ->
                 books.map { it.toBook() }
+            }
+    }
+
+    override fun getBookTitleWithCount(id: Int): Flow<BookWithSectionCount?> {
+       return pageDao
+            .getBookTitleWithCount(id)
+            .map { book ->
+                book?.toBookWithSectionCount()
             }
     }
 

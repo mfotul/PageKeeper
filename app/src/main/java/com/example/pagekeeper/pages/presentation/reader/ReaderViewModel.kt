@@ -20,13 +20,15 @@ import com.example.pagekeeper.pages.presentation.util.toSectionUi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -46,8 +48,8 @@ class ReaderViewModel(
             if (!hasLoadedInitialData) {
                 observeSettings()
                 observerBook()
+                hasLoadedInitialData = true
             }
-            hasLoadedInitialData = true
         }
         .stateIn(
             viewModelScope,
@@ -56,9 +58,14 @@ class ReaderViewModel(
         )
 
     val bookPager = state
-        .map { it.fonSizeChangeCounter }
-        .distinctUntilChanged()
-        .flatMapLatest {
+        .mapNotNull {
+            val fontSize = it.fontSize ?: return@mapNotNull null
+            it.fonSizeChangeCounter to fontSize
+        }
+        .distinctUntilChangedBy { (counter, _) ->
+            counter
+        }
+        .flatMapLatest { (counter, fontSize) ->
             Pager(
                 config = PagingConfig(pageSize = 1),
                 pagingSourceFactory = {
@@ -66,33 +73,31 @@ class ReaderViewModel(
                         .observeSectionsByBookIdPaginated(bookId)
                 }
             ).flow
-        }
-        .map { pagingData ->
-            pagingData.map {
-                it.toSection().toSectionUi(fontSize = state.value.fontSize.sp)
-            }
+                .map { pagingData ->
+                    pagingData.map {
+                        it.toSection().toSectionUi(fontSize = fontSize.sp)
+                    }
+                }
         }
         .cachedIn(viewModelScope)
 
     private fun observerBook() {
         pageDataSource
-            .observeBookById(bookId)
+            .getBookTitleWithCount(bookId)
+            .take(1)
             .onEach { book ->
-                book?.let { book ->
-                    if (book.sections.isEmpty())
-                        viewModelScope.launch {
-                            xmlParser
-                                .parseBookBodyFile(book)
-                                .onError {
-                                    Timber.e("Error $it")
-                                }
-                        }
-                    _state.update { state ->
-                        state.copy(
-                            bookName = book.title
-                        )
+                if (book == null) return@onEach
+
+                _state.update { state -> state.copy(bookName = book.title) }
+
+                if (book.sectionCount == 0)
+                    viewModelScope.launch {
+                        xmlParser
+                            .parseBookBodyFile(book.bookId!!)
+                            .onError {
+                                Timber.e("Error $it")
+                            }
                     }
-                }
             }
             .launchIn(viewModelScope)
     }
@@ -101,10 +106,10 @@ class ReaderViewModel(
         readerPreferences
             .observerFontSize()
             .onEach { newFontSize ->
+                println("TEST settings")
                 _state.update {
                     it.copy(
                         fontSize = newFontSize,
-                        fonSizeChangeCounter = it.fonSizeChangeCounter + 1
                     )
                 }
             }
@@ -129,6 +134,7 @@ class ReaderViewModel(
         if (changeFontSize)
             viewModelScope.launch {
                 readerPreferences.saveFontSize(newFontSize)
+                _state.update { it.copy(fonSizeChangeCounter = it.fonSizeChangeCounter + 1) }
             }
         else
             _state.update { it.copy(fontSize = newFontSize) }
