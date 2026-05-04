@@ -6,5 +6,6 @@ data class ReaderState(
     val isAutRotate: Boolean = true,
     val fontSize: Float? = null,
     val fonSizeChangeCounter: Int = 0,
+    val isFavorite: Boolean = false,
     val isFontSliderVisible: Boolean = false,
 )

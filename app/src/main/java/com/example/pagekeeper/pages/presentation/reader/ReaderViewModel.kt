@@ -21,6 +21,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -84,11 +85,13 @@ class ReaderViewModel(
     private fun observerBook() {
         pageDataSource
             .getBookTitleWithCount(bookId)
-            .take(1)
             .onEach { book ->
                 if (book == null) return@onEach
 
-                _state.update { state -> state.copy(bookName = book.title) }
+                _state.update { state -> state.copy(
+                    bookName = book.title,
+                    isFavorite = book.isFavorite
+                ) }
 
                 if (book.sectionCount == 0)
                     viewModelScope.launch {
@@ -119,11 +122,22 @@ class ReaderViewModel(
         when (action) {
             ReaderAction.OnLockScreenClick -> onLockScreen()
             ReaderAction.OnBackClick -> {}
-            ReaderAction.OnFavoritesClick -> {}
+            ReaderAction.OnFavoritesClick -> onFavoriteClick()
             ReaderAction.OnScreenClick -> onScreenClick()
             ReaderAction.OnFontSizeClick -> onFontSizeClick()
             is ReaderAction.OnFontSizeChange -> onFontChange(action.fontSize, true)
             is ReaderAction.OnSliderPositionChange -> onFontChange(action.fontSize, false)
+        }
+    }
+
+    private fun onFavoriteClick() {
+        viewModelScope.launch {
+            pageDataSource
+                .observeBookById(bookId)
+                .firstOrNull()
+                ?.let { book ->
+                    pageDataSource.upsertBook(book = book.copy(isFavorite = !book.isFavorite))
+                }
         }
     }
 

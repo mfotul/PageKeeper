@@ -28,6 +28,7 @@ import com.example.pagekeeper.core.presentation.designsystem.theme.icons
 fun ReaderTopAppBar(
     bookName: String,
     isVisible: Boolean,
+    isFavorite: Boolean,
     onBackClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -59,7 +60,12 @@ fun ReaderTopAppBar(
                 onClick = onFavoriteClick
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.favorites),
+                    painter = painterResource(
+                        if (isFavorite)
+                            R.drawable.menu_favorites_active
+                        else
+                            R.drawable.favorites
+                    ),
                     contentDescription = stringResource(R.string.favorites_label),
                 )
             }
@@ -89,6 +95,7 @@ private fun ReaderTopAppBarPreview() {
         ReaderTopAppBar(
             bookName = "very very long long book name very, very long long book name",
             isVisible = true,
+            isFavorite = true,
             onBackClick = {},
             onFavoriteClick = {}
         )

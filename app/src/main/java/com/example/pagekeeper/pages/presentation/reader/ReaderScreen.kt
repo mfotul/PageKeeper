@@ -114,6 +114,7 @@ fun ReaderScreen(
             ReaderTopAppBar(
                 bookName = state.bookName,
                 isVisible = state.areBarsVisible,
+                isFavorite = state.isFavorite,
                 onBackClick = { onAction(ReaderAction.OnBackClick) },
                 onFavoriteClick = { onAction(ReaderAction.OnFavoritesClick) }
             )

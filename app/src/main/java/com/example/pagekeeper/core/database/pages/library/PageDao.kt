@@ -32,7 +32,7 @@ interface PageDao {
     fun observeBookById(id: Int): Flow<BookWithSection?>
 
 
-    @Query("SELECT * FROM sectionentity WHERE bookId=:id")
+    @Query("SELECT * FROM sectionentity WHERE bookId=:id ORDER BY sectionId")
     fun observeSectionsByBookIdPaginated(id: Int): PagingSource<Int, SectionEntity>
 
     @Transaction
