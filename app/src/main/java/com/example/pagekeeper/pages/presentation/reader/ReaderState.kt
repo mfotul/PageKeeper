@@ -1,7 +1,5 @@
 package com.example.pagekeeper.pages.presentation.reader
 
-import androidx.compose.runtime.Stable
-
 data class ReaderState(
     val areBarsVisible: Boolean = false,
     val bookName: String,
