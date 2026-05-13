@@ -12,14 +12,14 @@ sealed interface LibraryAction {
     data object OnDialogCloseClick: LibraryAction
     data class OnScreenChange(val screen: Screen): LibraryAction
     data class OnImportFile(val uri: Uri): LibraryAction
-    data class OnBookClick(val bookId: Int): LibraryAction
-    data class OnBookLongClick(val bookId: Int): LibraryAction
-    data class OnBookFavoriteClick(val bookId: Int): LibraryAction
+    data class OnBookClick(val bookId: Long): LibraryAction
+    data class OnBookLongClick(val bookId: Long): LibraryAction
+    data class OnBookFavoriteClick(val bookId: Long): LibraryAction
     data object OnBooksFavoriteClick: LibraryAction
-    data class OnBookFinishClick(val bookId: Int): LibraryAction
-    data class OnBookShareClick(val bookId: Int): LibraryAction
+    data class OnBookFinishClick(val bookId: Long): LibraryAction
+    data class OnBookShareClick(val bookId: Long): LibraryAction
     data object OnBooksShareClick: LibraryAction
-    data class OnBookDeleteOneClick(val bookId: Int): LibraryAction
+    data class OnBookDeleteOneClick(val bookId: Long): LibraryAction
     data object OnBooksDeleteClick: LibraryAction
     data object OnBookDeleteConfirmClick: LibraryAction
 }

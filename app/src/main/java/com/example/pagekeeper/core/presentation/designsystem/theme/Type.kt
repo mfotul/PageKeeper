@@ -21,6 +21,12 @@ val Lora = FontFamily(
     ),
 )
 
+val Roboto = FontFamily(
+    Font(
+        resId = R.font.roboto_variable,
+    ),
+)
+
 val Typography = Typography(
     titleLarge = TextStyle(
         fontFamily = Lora,
@@ -73,35 +79,18 @@ val Typography = Typography(
     ),
 )
 
-val Typography.chapterTitle: TextStyle
+val Typography.contentsTitle: TextStyle
     get() = TextStyle(
         fontFamily = Lora,
-        fontWeight = FontWeight.Bold,
-        fontSize = 25.sp,
-        lineHeight = 30.sp
+        fontWeight = FontWeight.Medium,
+        fontSize = 17.sp,
+        lineHeight = 20.sp,
+        letterSpacing = (-1).sp
     )
-
-val Typography.paragraphRegular: TextStyle
+val Typography.chapterTitle: TextStyle
     get() = TextStyle(
-        fontFamily = Inter,
+        fontFamily = Roboto,
         fontWeight = FontWeight.Normal,
-        fontSize = 18.sp,
-        lineHeight = 24.sp
-    )
-
-val Typography.paragraphBold: TextStyle
-    get() = TextStyle(
-        fontFamily = Inter,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 18.sp,
-        lineHeight = 24.sp
-    )
-
-val Typography.paragraphItalic: TextStyle
-    get() = TextStyle(
-        fontFamily = Inter,
-        fontWeight = FontWeight.Normal,
-        fontStyle = FontStyle.Italic,
-        fontSize = 18.sp,
-        lineHeight = 24.sp
+        fontSize = 13.sp,
+        lineHeight = 16.sp,
     )

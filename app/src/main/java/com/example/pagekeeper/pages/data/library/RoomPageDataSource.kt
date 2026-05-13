@@ -1,11 +1,11 @@
 package com.example.pagekeeper.pages.data.library
 
 import com.example.pagekeeper.core.database.pages.library.PageDao
-import com.example.pagekeeper.pages.data.reader.toSectionEntity
+import com.example.pagekeeper.pages.data.reader.toElement
+import com.example.pagekeeper.pages.data.reader.toElementEntity
 import com.example.pagekeeper.pages.domain.library.Book
 import com.example.pagekeeper.pages.domain.library.PageDataSource
-import com.example.pagekeeper.pages.domain.reader.BookWithSectionCount
-import com.example.pagekeeper.pages.domain.reader.Section
+import com.example.pagekeeper.pages.domain.reader.Element
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -41,13 +41,13 @@ class RoomPageDataSource(
             }
     }
 
-    override fun observeBookById(id: Int): Flow<Book?> {
+    override fun observeBookById(bookId: Long): Flow<Book?> {
         return pageDao
-            .observeBookById(id)
+            .observeBookById(bookId)
             .map { it?.toBook() }
     }
 
-    override fun observeBooksByIds(ids: List<Int>): Flow<List<Book>> {
+    override fun observeBooksByIds(ids: List<Long>): Flow<List<Book>> {
         return pageDao
             .observeBooksByIds(ids)
             .map { books ->
@@ -67,13 +67,28 @@ class RoomPageDataSource(
             }
     }
 
-    override fun getBookTitleWithCount(id: Int): Flow<BookWithSectionCount?> {
+    override fun getBookTitleWithCount(id: Long): Flow<Book?> {
        return pageDao
             .getBookTitleWithCount(id)
             .map { book ->
-                book?.toBookWithSectionCount()
+                book?.toBook()
             }
     }
+
+    override fun observerChaptersByBookId(id: Long): Flow<List<Element>> {
+        return pageDao
+            .observerChaptersByBookId(id)
+            .map {
+                it.map { element ->
+                    element.toElement()
+                }
+            }
+    }
+
+    override fun getIndexOfElementByBookId(
+        bookId: Long,
+        elementId: Long
+    ): Flow<Int> = pageDao.getIndexOfElementByBookId(bookId, elementId)
 
     override suspend fun removeSelected() {
         pageDao.removeSelected()
@@ -89,11 +104,11 @@ class RoomPageDataSource(
         )
     }
 
-    override suspend fun insertSection(section: Section) {
-        pageDao.insertSection(section.toSectionEntity())
+    override suspend fun insertElement(section: Element) {
+        pageDao.insertElement(section.toElementEntity())
     }
 
-    override suspend fun deleteSections(sections: List<Section>) {
-        pageDao.deleteSections(sections.map { it.toSectionEntity() })
+    override suspend fun deleteElementsByBookId(bookId: Long) {
+        pageDao.deleteElementsByBookId(bookId)
     }
 }

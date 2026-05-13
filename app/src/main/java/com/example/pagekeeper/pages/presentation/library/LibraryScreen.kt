@@ -24,7 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Devices.TABLET
+import androidx.compose.ui.tooling.preview.Devices.PHONE
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -35,6 +35,7 @@ import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperThe
 import com.example.pagekeeper.core.presentation.util.ObserveAsEvents
 import com.example.pagekeeper.pages.presentation.library.components.LibraryDialog
 import com.example.pagekeeper.pages.presentation.library.components.LibraryEmptyList
+import com.example.pagekeeper.pages.presentation.library.components.LibraryFloatingActionButton
 import com.example.pagekeeper.pages.presentation.library.components.LibraryList
 import com.example.pagekeeper.pages.presentation.library.components.LibraryListTopAppBar
 import com.example.pagekeeper.pages.presentation.library.components.LibraryLoadingIndicator
@@ -56,7 +57,7 @@ import java.io.File
 
 @Composable
 fun LibraryScreenRoot(
-    onBookSelected: (Int) -> Unit,
+    onBookSelected: (Long) -> Unit,
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -150,6 +151,14 @@ fun LibraryScreen(
                                 selectedItemsCount = state.books.count { it.isSelected }
                             )
                     }
+            },
+            floatingActionButton = {
+                if (!isTablet && state.recentlyOpenedBooks.isNotEmpty())
+                    LibraryFloatingActionButton(
+                        onClick = {
+                            onAction(LibraryAction.OnBookClick(state.recentlyOpenedBooks.first()))
+                        }
+                    )
             },
             modifier = modifier
                 .fillMaxSize()
@@ -294,7 +303,7 @@ private fun getShareMultipleBooksIntent(uris: ArrayList<Uri>): Intent {
     }
 }
 
-@Preview(device = TABLET)
+@Preview(device = PHONE)
 @Composable
 private fun LibraryScreenPreview() {
     PageKeeperTheme {

@@ -1,9 +1,9 @@
-package com.example.pagekeeper.core.database.book_section_relation
+package com.example.pagekeeper.core.database.book_element_relation
 
 import androidx.room.Embedded
 import com.example.pagekeeper.core.database.pages.library.BookEntity
 
-data class BookWithSectionCountRoom(
+data class BookWithElementCount(
     @Embedded val book: BookEntity,
-    val sectionCount: Int
+    val elementCount: Int
 )

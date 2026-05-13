@@ -8,5 +8,8 @@ sealed interface NavigationRoute: NavKey {
     data object LibraryScreen: NavigationRoute, NavKey
 
     @Serializable
-    data class ReaderScreen(val bookId: Int): NavigationRoute, NavKey
+    data class ReaderScreen(val bookId: Long): NavigationRoute, NavKey
+
+    @Serializable
+    data class NavigationScreen(val bookId: Long, val elementId: Long?): NavigationRoute, NavKey
 }

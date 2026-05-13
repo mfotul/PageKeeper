@@ -1,6 +1,5 @@
 package com.example.pagekeeper.pages.domain.library
 
-import com.example.pagekeeper.pages.domain.reader.Section
 import java.time.Instant
 
 data class Book(
@@ -12,7 +11,10 @@ data class Book(
     val isFavorite: Boolean = false,
     val isFinished: Boolean = false,
     val isSelected: Boolean = false,
+    val readingPositionIndex: Int,
+    val readingPositionOffset: Int,
+    val readingProgress: Float,
     val addedAt: Instant,
-    val bookId: Int? = null,
-    val sections: List<Section>
+    val elementCount: Int = 0,
+    val bookId: Long? = null,
 )

@@ -30,7 +30,7 @@ import com.example.pagekeeper.pages.presentation.models.BookUi
 fun LibrarySearchResult(
     bookUis: List<BookUi>,
     isTablet: Boolean,
-    onClick: (Int) -> Unit,
+    onClick: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val columns = GridCells.Fixed(if (isTablet) 2 else 1)

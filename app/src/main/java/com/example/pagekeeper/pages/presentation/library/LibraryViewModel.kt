@@ -12,9 +12,10 @@ import com.example.pagekeeper.core.domain.util.ParserError
 import com.example.pagekeeper.core.domain.util.onError
 import com.example.pagekeeper.core.domain.util.onSuccess
 import com.example.pagekeeper.pages.domain.library.PageDataSource
-import com.example.pagekeeper.pages.presentation.library.models.Screen
+import com.example.pagekeeper.pages.domain.library.PagePreferences
 import com.example.pagekeeper.pages.domain.library.XmlParser
 import com.example.pagekeeper.pages.presentation.library.models.DialogType
+import com.example.pagekeeper.pages.presentation.library.models.Screen
 import com.example.pagekeeper.pages.presentation.library.models.ScreenType
 import com.example.pagekeeper.pages.presentation.util.toBookUi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,7 +38,8 @@ import timber.log.Timber
 
 class LibraryViewModel(
     private val xmlParser: XmlParser,
-    private val pageDataSource: PageDataSource
+    private val pageDataSource: PageDataSource,
+    private val pagePreferences: PagePreferences,
 ) : ViewModel() {
     private var hasLoadedInitialData = false
 
@@ -80,11 +82,24 @@ class LibraryViewModel(
                     val booksUi = books.map { it.toBookUi() }
                     val screenType = if (booksUi.any { it.isSelected }) ScreenType.SELECTED
                     else ScreenType.LIST
-                    state.copy(books = booksUi, screenType = screenType)
+                    state.copy(
+                        books = booksUi,
+                        screenType = screenType
+                    )
                 }
             }
             .launchIn(viewModelScope)
 
+            pagePreferences
+                .observeRecentlyOpenedBooks()
+                .onEach { recentlyOpenedBooks ->
+                    _state.update {
+                        it.copy(
+                            recentlyOpenedBooks = recentlyOpenedBooks
+                        )
+                    }
+                }
+                .launchIn(viewModelScope)
 
         snapshotFlow { searchFieldState.text }
             .distinctUntilChanged()
@@ -103,7 +118,13 @@ class LibraryViewModel(
     fun onAction(action: LibraryAction) {
         when (action) {
             is LibraryAction.OnScreenChange -> onScreenChange(action.screen)
-            LibraryAction.OnSearchIconClick -> _state.update { it.copy(screenType = ScreenType.SEARCH, isTabletSearchBarEnabled = true) }
+            LibraryAction.OnSearchIconClick -> _state.update {
+                it.copy(
+                    screenType = ScreenType.SEARCH,
+                    isTabletSearchBarEnabled = true
+                )
+            }
+
             LibraryAction.OnBackClick -> onBackClick()
             LibraryAction.OnMenuIconClick -> onEventSend(LibraryEvent.OnDrawerOpen)
             LibraryAction.OnDrawerClose -> onEventSend(LibraryEvent.OnDrawerClose)
@@ -123,7 +144,7 @@ class LibraryViewModel(
         }
     }
 
-    private fun onBookLongClick(bookId: Int) {
+    private fun onBookLongClick(bookId: Long) {
         viewModelScope.launch {
             pageDataSource
                 .observeBookById(bookId)
@@ -151,17 +172,23 @@ class LibraryViewModel(
         }
     }
 
-    private fun onBookClick(bookId: Int) {
+    private fun onBookClick(bookId: Long) {
         viewModelScope.launch {
-            if (state.value.screenType == ScreenType.SELECTED)
             pageDataSource
                 .observeBookById(bookId)
                 .firstOrNull()
                 ?.let { book ->
-                    pageDataSource.upsertBook(book.copy(isSelected = !book.isSelected))
+                    if (state.value.screenType == ScreenType.SELECTED)
+                        pageDataSource.upsertBook(book.copy(isSelected = !book.isSelected))
+                    else {
+                        if (!book.isFinished) {
+                            pagePreferences.saveRecentlyOpenedBooks(
+                                listOf(bookId) + state.value.recentlyOpenedBooks.filter { it != bookId }
+                            )
+                        }
+                        eventChannel.send(LibraryEvent.OnBookSelected(bookId))
+                    }
                 }
-            else
-                eventChannel.send(LibraryEvent.OnBookSelected(bookId))
         }
     }
 
@@ -173,11 +200,13 @@ class LibraryViewModel(
     private fun onScreenChange(screen: Screen) {
         onEventSend(LibraryEvent.OnDrawerClose)
         searchFieldState.clearText()
-        _state.update { it.copy(
-            screen = screen,
-            screenType = ScreenType.LIST,
-            isTabletSearchBarEnabled = false
-        ) }
+        _state.update {
+            it.copy(
+                screen = screen,
+                screenType = ScreenType.LIST,
+                isTabletSearchBarEnabled = false
+            )
+        }
     }
 
     private fun onEventSend(event: LibraryEvent) {
@@ -211,7 +240,7 @@ class LibraryViewModel(
         }
     }
 
-    private fun onDelete(bookId: Int) {
+    private fun onDelete(bookId: Long) {
         _state.update {
             it.copy(
                 dialogType = DialogType.DELETE,
@@ -242,8 +271,12 @@ class LibraryViewModel(
                                 ?.let {
                                     xmlParser.deleteBook(it) ?: Timber.e("Unable delete file: $it")
                                 }
-                            pageDataSource.deleteSections(book.sections)
+                            pageDataSource.deleteElementsByBookId(book.bookId!!)
                         }
+                        val booksId = books.mapNotNull { it.bookId }
+                        pagePreferences.saveRecentlyOpenedBooks(
+                            state.value.recentlyOpenedBooks.filterNot { it in booksId }
+                        )
                         pageDataSource.deleteBook(books)
                     }
             }
@@ -251,7 +284,7 @@ class LibraryViewModel(
     }
 
 
-    private fun onFavoriteClick(bookId: Int) {
+    private fun onFavoriteClick(bookId: Long) {
         viewModelScope.launch {
             _state.update { it.copy(screenType = ScreenType.LIST) }
             pageDataSource
@@ -263,7 +296,7 @@ class LibraryViewModel(
         }
     }
 
-    private fun onBookShareClick(bookId: Int) {
+    private fun onBookShareClick(bookId: Long) {
         viewModelScope.launch {
             pageDataSource
                 .observeBookById(bookId)
@@ -310,14 +343,18 @@ class LibraryViewModel(
         }
     }
 
-    private fun onFinishedClick(bookId: Int) {
+    private fun onFinishedClick(bookId: Long) {
         _state.update { it.copy(screenType = ScreenType.LIST) }
         viewModelScope.launch {
             pageDataSource
                 .observeBookById(bookId)
                 .firstOrNull()
                 ?.let { book ->
-                    pageDataSource.upsertBook(book = book.copy(isFinished = !book.isFinished))
+                    if (!book.isFinished)
+                        pagePreferences.saveRecentlyOpenedBooks(
+                            state.value.recentlyOpenedBooks.filter { it != bookId }
+                        )
+                    pageDataSource.upsertBook(book.copy(isFinished = !book.isFinished))
                 }
         }
     }

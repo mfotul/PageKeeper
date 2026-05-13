@@ -1,8 +1,7 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalCoroutinesApi::class)
+@file:OptIn(ExperimentalCoroutinesApi::class)
 
 package com.example.pagekeeper.pages.presentation.reader
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,41 +11,43 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import com.example.pagekeeper.core.database.pages.library.PageDao
 import com.example.pagekeeper.core.domain.util.onError
-import com.example.pagekeeper.pages.data.reader.toSection
+import com.example.pagekeeper.pages.data.reader.toElement
 import com.example.pagekeeper.pages.domain.library.PageDataSource
+import com.example.pagekeeper.pages.domain.library.PagePreferences
 import com.example.pagekeeper.pages.domain.library.XmlParser
-import com.example.pagekeeper.pages.domain.reader.ReaderPreferences
-import com.example.pagekeeper.pages.presentation.util.toSectionUi
+import com.example.pagekeeper.pages.presentation.reader.models.ElementUi
+import com.example.pagekeeper.pages.presentation.util.toElementUi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class ReaderViewModel(
-    private val bookId: Int,
+    private val bookId: Long,
     private val xmlParser: XmlParser,
     private val pageDao: PageDao,
     private val pageDataSource: PageDataSource,
-    private val readerPreferences: ReaderPreferences
+    private val readerPreferences: PagePreferences
 ) : ViewModel() {
     private var hasLoadedInitialData = false
 
-    private val _state = MutableStateFlow(ReaderState())
+    private val _state = MutableStateFlow<ReaderState?>(null)
     val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
-                observeSettings()
                 observerBook()
                 hasLoadedInitialData = true
             }
@@ -54,78 +55,124 @@ class ReaderViewModel(
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000L),
-            ReaderState()
+            null
         )
 
     val bookPager = state
-        .mapNotNull {
-            val fontSize = it.fontSize ?: return@mapNotNull null
-            it.fonSizeChangeCounter to fontSize
+        .filterNotNull()
+        .distinctUntilChangedBy {
+            it.fonSizeChangeCounter
         }
-        .distinctUntilChangedBy { (counter, _) ->
-            counter
-        }
-        .flatMapLatest { (counter, fontSize) ->
+        .flatMapLatest { state ->
             Pager(
-                config = PagingConfig(pageSize = 1),
+                config = PagingConfig(
+                    pageSize = 100,
+                ),
+                initialKey = state.readingPositionIndex,
                 pagingSourceFactory = {
                     pageDao
-                        .observeSectionsByBookIdPaginated(bookId)
+                        .observeElementsByBookId(bookId)
                 }
             ).flow
                 .map { pagingData ->
                     pagingData.map {
-                        it.toSection().toSectionUi(fontSize = fontSize.sp)
+                        it.toElement().toElementUi(fontSize = state.fontSize.sp)
                     }
                 }
         }
         .cachedIn(viewModelScope)
 
+    private val eventChannel = Channel<ReaderEvent>()
+    val events = eventChannel.receiveAsFlow()
+
     private fun observerBook() {
-        pageDataSource
-            .getBookTitleWithCount(bookId)
-            .onEach { book ->
-                if (book == null) return@onEach
-
-                _state.update { state -> state.copy(
+        combine(
+            pageDataSource.getBookTitleWithCount(bookId),
+            readerPreferences.observerFontSize()
+        ) { book, fontSize ->
+            if (book == null) return@combine
+            _state.update { state ->
+                val newState = state ?: ReaderState(
+                    bookName = "",
+                    isFavorite = false,
+                    fontSize = 0f,
+                    readingPositionIndex = 0,
+                    readingPositionOffset = 0,
+                    elementCount = 0
+                )
+                newState.copy(
                     bookName = book.title,
-                    isFavorite = book.isFavorite
-                ) }
-
-                if (book.sectionCount == 0)
-                    viewModelScope.launch {
-                        xmlParser
-                            .parseBookBodyFile(book.bookId!!)
-                            .onError {
-                                Timber.e("Error $it")
-                            }
-                    }
+                    isFavorite = book.isFavorite,
+                    fontSize = fontSize,
+                    readingPositionIndex = book.readingPositionIndex,
+                    readingPositionOffset = book.readingPositionOffset,
+                    elementCount = book.elementCount
+                )
             }
-            .launchIn(viewModelScope)
-    }
 
-    private fun observeSettings() {
-        readerPreferences
-            .observerFontSize()
-            .onEach { newFontSize ->
-                _state.update {
-                    it.copy(
-                        fontSize = newFontSize,
-                    )
+            if (book.elementCount == 0)
+                viewModelScope.launch {
+                    xmlParser
+                        .parseBookBodyFile(book.bookId!!)
+                        .onError {
+                            Timber.e("Error $it")
+                        }
                 }
-            }
+        }
             .launchIn(viewModelScope)
     }
 
     fun onAction(action: ReaderAction) {
         when (action) {
             ReaderAction.OnLockScreenClick -> onLockScreen()
-            ReaderAction.OnBackClick -> {}
+            is ReaderAction.OnBackClick -> onBackClick(
+                readingPositionIndex = action.readingPositionIndex,
+                readingPositionOffset = action.readingPositionOffset,
+                readingProgress = action.readingProgress,
+            )
+
             ReaderAction.OnFavoritesClick -> onFavoriteClick()
             ReaderAction.OnScreenClick -> onScreenClick()
             ReaderAction.OnFontSizeClick -> onFontSizeClick()
-            is ReaderAction.OnFontSizeChange -> onFontChange(action.fontSize, true)
-            is ReaderAction.OnSliderPositionChange -> onFontChange(action.fontSize, false)
+            is ReaderAction.OnFontSizeChange -> onFontChange(
+                fontSize = action.fontSize,
+                changeFontSize = true,
+            )
+
+            is ReaderAction.OnSliderPositionChange -> onFontChange(
+                fontSize = action.fontSize,
+                changeFontSize = false,
+            )
+
+            is ReaderAction.OnChapterClick -> onChapterClick(action.currentElementOnTop)
+        }
+    }
+
+    private fun onChapterClick(currentElementOnTop: ElementUi?) {
+        viewModelScope.launch {
+            eventChannel.send(ReaderEvent.OnChapterClick(bookId, currentElementOnTop?.elementId))
+        }
+    }
+
+    private fun onBackClick(
+        readingPositionIndex: Int,
+        readingPositionOffset: Int,
+        readingProgress: Float,
+    ){
+        viewModelScope.launch {
+            pageDataSource
+                .observeBookById(bookId)
+                .firstOrNull()
+                ?.let { book ->
+                    pageDataSource.upsertBook(
+                        book = book.copy(
+                            readingPositionIndex = readingPositionIndex,
+                            readingPositionOffset = readingPositionOffset,
+                            readingProgress = readingProgress
+                        )
+                    )
+                }
+            eventChannel.send(ReaderEvent.OnBackClick)
         }
     }
 
@@ -140,33 +187,38 @@ class ReaderViewModel(
         }
     }
 
-    private fun onFontChange(fontSize: Float, changeFontSize: Boolean) {
+    private fun onFontChange(
+        fontSize: Float,
+        changeFontSize: Boolean,
+    ) {
         val newFontSize = fontSize.toInt().toFloat().coerceIn(10f, 40f)
 
         if (changeFontSize)
             viewModelScope.launch {
                 readerPreferences.saveFontSize(newFontSize)
-                _state.update { it.copy(fonSizeChangeCounter = it.fonSizeChangeCounter + 1) }
+                _state.update { it?.copy(fonSizeChangeCounter = it.fonSizeChangeCounter + 1) }
             }
         else
-            _state.update { it.copy(fontSize = newFontSize) }
+            _state.update { it?.copy(fontSize = newFontSize) }
     }
 
     private fun onFontSizeClick() {
-        _state.update { it.copy(isFontSliderVisible = true) }
+        _state.update {
+            it?.copy(isFontSliderVisible = true)
+        }
     }
 
     private fun onLockScreen() {
         viewModelScope.launch {
             _state.update {
-                it.copy(isAutRotate = !it.isAutRotate)
+                it?.copy(isAutRotate = !it.isAutRotate)
             }
         }
     }
 
     private fun onScreenClick() {
         _state.update {
-            it.copy(
+            it?.copy(
                 areBarsVisible = !it.areBarsVisible,
                 isFontSliderVisible = false
             )

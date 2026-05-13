@@ -1,13 +1,9 @@
 package com.example.pagekeeper.pages.data.library
 
-import com.example.pagekeeper.core.database.book_section_relation.BookWithSection
-import com.example.pagekeeper.core.database.book_section_relation.BookWithSectionCountRoom
+import com.example.pagekeeper.core.database.book_element_relation.BookWithElementCount
 import com.example.pagekeeper.core.database.pages.library.BookEntity
-import com.example.pagekeeper.pages.data.reader.toSection
 import com.example.pagekeeper.pages.domain.library.Book
-import com.example.pagekeeper.pages.domain.reader.BookWithSectionCount
 import java.time.Instant
-
 
 
 fun Book.toBookEntity(): BookEntity {
@@ -21,6 +17,9 @@ fun Book.toBookEntity(): BookEntity {
         isFavorite = isFavorite,
         isFinished = isFinished,
         isSelected = isSelected,
+        readingPositionIndex = readingPositionIndex,
+        readingPositionOffset = readingPositionOffset,
+        readingProgress = readingProgress,
         addedAt = addedAt.toEpochMilli()
     )
 }
@@ -36,39 +35,28 @@ fun BookEntity.toBook(): Book {
         isFavorite = isFavorite,
         isFinished = isFinished,
         isSelected = isSelected,
+        readingPositionIndex = readingPositionIndex,
+        readingPositionOffset = readingPositionOffset,
+        readingProgress = readingProgress,
         addedAt = Instant.ofEpochMilli(addedAt),
-        sections = emptyList()
     )
 }
 
-fun BookWithSection.toBook(): Book {
-    return Book(
-        bookId = book.bookId,
-        title = book.title,
-        author = book.author,
-        bookPath = book.bookPath,
-        coverPath = book.coverPath,
-        documentId = book.documentId,
-        isFavorite = book.isFavorite,
-        isFinished = book.isFinished,
-        isSelected = book.isSelected,
-        addedAt = Instant.ofEpochMilli(book.addedAt),
-        sections = sections.map { it.toSection() }
-    )
-}
-
-fun BookWithSectionCountRoom.toBookWithSectionCount(): BookWithSectionCount {
-    return BookWithSectionCount(
-        title = book.title,
-        author = book.author,
-        bookPath = book.bookPath,
-        coverPath = book.coverPath,
-        documentId = book.documentId,
-        isFavorite = book.isFavorite,
-        isFinished = book.isFinished,
-        isSelected = book.isSelected,
-        addedAt = Instant.ofEpochMilli(book.addedAt),
-        bookId = book.bookId,
-        sectionCount = sectionCount
-    )
+fun BookWithElementCount.toBook(): Book {
+ return Book(
+     title = book.title,
+     author = book.author,
+     bookPath = book.bookPath,
+     coverPath = book.coverPath,
+     documentId = book.documentId,
+     isFavorite = book.isFavorite,
+     isFinished = book.isFinished,
+     isSelected = book.isSelected,
+     readingPositionIndex = book.readingPositionIndex,
+     readingPositionOffset = book.readingPositionOffset,
+     readingProgress = book.readingProgress,
+     addedAt = Instant.ofEpochMilli(book.addedAt),
+     elementCount = elementCount,
+     bookId = book.bookId
+ )
 }

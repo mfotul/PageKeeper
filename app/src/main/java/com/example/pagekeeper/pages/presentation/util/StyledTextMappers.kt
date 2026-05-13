@@ -43,3 +43,11 @@ fun List<StyledText>.toAnnotatedString(
         }
     }
 }
+
+fun List<StyledText>.toTitleString(): String {
+    return buildString {
+        this@toTitleString.forEach { span ->
+            append(span.text)
+        }
+    }
+}

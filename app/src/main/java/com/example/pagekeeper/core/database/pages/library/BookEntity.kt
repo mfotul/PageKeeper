@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class BookEntity(
     @PrimaryKey(autoGenerate = true)
-    val bookId: Int = 0,
+    val bookId: Long = 0,
     val title: String,
     val author: String,
     val bookPath: String,
@@ -15,5 +15,8 @@ data class BookEntity(
     val isFavorite: Boolean,
     val isFinished: Boolean,
     val isSelected: Boolean,
+    val readingPositionIndex: Int,
+    val readingPositionOffset: Int,
+    val readingProgress: Float,
     val addedAt: Long,
 )

@@ -1,7 +1,6 @@
 package com.example.pagekeeper.pages.domain.library
 
-import com.example.pagekeeper.pages.domain.reader.BookWithSectionCount
-import com.example.pagekeeper.pages.domain.reader.Section
+import com.example.pagekeeper.pages.domain.reader.Element
 import kotlinx.coroutines.flow.Flow
 
 interface PageDataSource {
@@ -9,14 +8,16 @@ interface PageDataSource {
     fun observeLibrary(): Flow<List<Book>>
     fun observeFavorites(): Flow<List<Book>>
     fun observeFinished(): Flow<List<Book>>
-    fun observeBookById(id: Int): Flow<Book?>
-    fun observeBooksByIds(ids: List<Int>): Flow<List<Book>>
+    fun observeBookById(bookId: Long): Flow<Book?>
+    fun observeBooksByIds(ids: List<Long>): Flow<List<Book>>
     fun observeDocumentsId(): Flow<List<String>>
     fun searchBooksByTitle(search: String): Flow<List<Book>>
-    fun getBookTitleWithCount(id: Int): Flow<BookWithSectionCount?>
+    fun getBookTitleWithCount(id: Long): Flow<Book?>
+    fun observerChaptersByBookId(id: Long): Flow<List<Element>>
+    fun getIndexOfElementByBookId(bookId: Long, elementId: Long): Flow<Int>
     suspend fun removeSelected()
     suspend fun upsertBook(book: Book)
     suspend fun deleteBook(book: List<Book>)
-    suspend fun insertSection(section: Section)
-    suspend fun deleteSections(sections: List<Section>)
+    suspend fun insertElement(section: Element)
+    suspend fun deleteElementsByBookId(bookId: Long)
 }

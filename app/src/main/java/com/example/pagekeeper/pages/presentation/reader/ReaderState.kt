@@ -1,11 +1,16 @@
 package com.example.pagekeeper.pages.presentation.reader
 
+import androidx.compose.runtime.Stable
+
 data class ReaderState(
     val areBarsVisible: Boolean = false,
-    val bookName: String = "",
+    val bookName: String,
     val isAutRotate: Boolean = true,
-    val fontSize: Float? = null,
+    val fontSize: Float,
     val fonSizeChangeCounter: Int = 0,
-    val isFavorite: Boolean = false,
+    val isFavorite: Boolean,
     val isFontSliderVisible: Boolean = false,
+    val readingPositionIndex: Int,
+    val readingPositionOffset: Int,
+    val elementCount: Int,
 )

@@ -36,4 +36,9 @@
     <string name="font_size">Font Size</string>
     <string name="increase_font_size">Increase font size</string>
     <string name="decrease_font_size">Decrease font size</string>
+    <string name="chapter_navigation">Chapter navigation</string>
+    <string name="chapters">Chapters</string>
+    <string name="progress">%d%%</string>
+    <string name="read_recently_opened_book">Read recently opened book.</string>
+    <string name="collapse_content">Collapse content page</string>
 </resources>

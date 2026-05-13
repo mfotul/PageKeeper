@@ -15,4 +15,5 @@ data class LibraryState(
     val isTabletSearchBarEnabled: Boolean = false,
     val dialogType: DialogType = DialogType.NONE,
     val booksPendingDeletion: List<BookUi> = emptyList(),
+    val recentlyOpenedBooks: List<Long> = emptyList()
 )
