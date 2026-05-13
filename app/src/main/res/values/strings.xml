@@ -41,4 +41,5 @@
     <string name="progress">%d%%</string>
     <string name="read_recently_opened_book">Read recently opened book.</string>
     <string name="collapse_content">Collapse content page</string>
+    <string name="expand_content">Expand Content</string>
 </resources>

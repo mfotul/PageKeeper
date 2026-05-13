@@ -1,5 +1,6 @@
 package com.example.pagekeeper.pages.domain.library
 
+import com.example.pagekeeper.core.database.pages.reader.ElementEntity
 import com.example.pagekeeper.pages.domain.reader.Element
 import kotlinx.coroutines.flow.Flow
 
@@ -14,6 +15,7 @@ interface PageDataSource {
     fun searchBooksByTitle(search: String): Flow<List<Book>>
     fun getBookTitleWithCount(id: Long): Flow<Book?>
     fun observerChaptersByBookId(id: Long): Flow<List<Element>>
+    fun observerChaptersByBookIdAndSectionId(id: Long): Flow<List<Element>>
     fun getIndexOfElementByBookId(bookId: Long, elementId: Long): Flow<Int>
     suspend fun removeSelected()
     suspend fun upsertBook(book: Book)

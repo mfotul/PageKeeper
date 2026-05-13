@@ -4,6 +4,14 @@ package com.example.pagekeeper.pages.presentation.reader
 
 import android.content.pm.ActivityInfo
 import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -87,7 +95,10 @@ fun ReaderScreenRoot(
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             ReaderEvent.OnBackClick -> onBackClick()
-            is ReaderEvent.OnChapterClick -> onChapterClick(event.bookId, event.currentElementIdOnTop)
+            is ReaderEvent.OnChapterClick -> onChapterClick(
+                event.bookId,
+                event.currentElementIdOnTop
+            )
         }
     }
 
@@ -145,6 +156,7 @@ fun ReaderScreen(
     LaunchedEffect(resultStore) {
         val chapterIndex = resultStore.getResult<Int>("chapterIndex")
         if (chapterIndex != null) {
+            onAction(ReaderAction.OnChapterSelected(chapterIndex))
             listState.animateScrollToItem(chapterIndex)
             resultStore.removeResult("chapterIndex")
         }
@@ -167,43 +179,6 @@ fun ReaderScreen(
                 },
                 onFavoriteClick = { onAction(ReaderAction.OnFavoritesClick) }
             )
-        },
-        bottomBar = {
-            Box {
-                if (state.isFontSliderVisible)
-                    ReaderBottomSlider(
-                        fontSize = state.fontSize,
-                        onFontSizeSet = { newSize ->
-                            onAction(
-                                ReaderAction.OnFontSizeChange(fontSize = newSize)
-                            )
-                        },
-                        onSliderPositionChange = {
-                            onAction(
-                                ReaderAction.OnSliderPositionChange(
-                                    it
-                                )
-                            )
-                        }
-                    )
-                else
-                    ReaderBottomButtons(
-                        isAutoRotate = state.isAutRotate,
-                        isVisible = state.areBarsVisible,
-                        isTablet = isTablet,
-                        progress = { progress },
-                        onRotateClick = { onAction(ReaderAction.OnLockScreenClick) },
-                        onFonSizeClick = { onAction(ReaderAction.OnFontSizeClick) },
-                        onChaptersClick = {
-                            val index = listState.firstVisibleItemIndex
-                            val elementUi = if (index < lazyPagingItems.itemCount)
-                                lazyPagingItems[index]
-                            else
-                                null
-                            onAction(ReaderAction.OnChapterClick(elementUi))
-                        }
-                    )
-            }
         },
         modifier = modifier
     ) { innerPadding ->
@@ -264,10 +239,71 @@ fun ReaderScreen(
                         CircularProgressIndicator()
                 }
             }
-            if (!state.areBarsVisible)
+            AnimatedVisibility(
+                visible = !state.areBarsVisible,
+                enter = fadeIn(
+                    animationSpec = tween(
+                        durationMillis = 700,
+                        delayMillis = 200
+                    )
+                ),
+                exit = fadeOut(
+                    animationSpec = snap()
+                )
+            ) {
                 ReaderLinearProgressIndicator(
                     progress = { progress }
                 )
+            }
+
+            AnimatedVisibility(
+                visible = state.areBarsVisible,
+                enter = slideInVertically(
+                    animationSpec = tween(
+                        durationMillis = 200,
+                        easing = LinearOutSlowInEasing
+                    ),
+                    initialOffsetY = { it }
+                ),
+                exit = slideOutVertically(
+                    animationSpec = snap(),
+                    targetOffsetY = { it }
+                )
+            ) {
+                if (state.isFontSliderVisible)
+                    ReaderBottomSlider(
+                        fontSize = state.fontSize,
+                        onFontSizeSet = { newSize ->
+                            onAction(
+                                ReaderAction.OnFontSizeChange(fontSize = newSize)
+                            )
+                        },
+                        onSliderPositionChange = {
+                            onAction(
+                                ReaderAction.OnSliderPositionChange(
+                                    it
+                                )
+                            )
+                        }
+                    )
+                else
+                    ReaderBottomButtons(
+                        isAutoRotate = state.isAutRotate,
+                        isTablet = isTablet,
+                        progress = { progress },
+                        onRotateClick = { onAction(ReaderAction.OnLockScreenClick) },
+                        onFonSizeClick = { onAction(ReaderAction.OnFontSizeClick) },
+                        onChaptersClick = {
+                            val index = listState.firstVisibleItemIndex
+                            val elementUi = if (index < lazyPagingItems.itemCount)
+                                lazyPagingItems[index]
+                            else
+                                null
+                            onAction(ReaderAction.OnChapterClick(elementUi))
+                        }
+                    )
+            }
+
         }
     }
 }

@@ -63,8 +63,8 @@ fun NavigationScreen(
         modifier = modifier
     ) { innerPadding ->
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
+//            verticalArrangement = Arrangement.spacedBy(16.dp),
+//            contentPadding = PaddingValues(vertical = 16.dp),
             modifier = Modifier
                 .padding(innerPadding)
         ) {
@@ -74,7 +74,11 @@ fun NavigationScreen(
                     isLast = index == state.contents.lastIndex,
                     onChapterClick = { chapterId ->
                         onAction(NavigationAction.OnChapterClick(chapterId))
-                    }
+                    },
+                    onTitleClick = {
+                        onAction(NavigationAction.OnTitleClick(contentUi))
+                    },
+                    isExpanded = state.expandedContentId == contentUi.id
                 )
             }
         }
@@ -87,7 +91,8 @@ private fun NavigationScreenPreview() {
     PageKeeperTheme {
         NavigationScreen(
             state = NavigationState(
-                contents = PreviewModel.contents
+                contents = PreviewModel.contents,
+                expandedContentId = PreviewModel.contents[0].id
             ),
             onAction = {}
         )

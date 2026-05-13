@@ -1,5 +1,6 @@
 package com.example.pagekeeper.pages.presentation.navigation.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,12 +29,13 @@ import com.example.pagekeeper.pages.presentation.preview.PreviewModel
 @Composable
 fun NavigationChapter(
     contentUi: ContentUi,
-    onChapterClick: (Long) -> Unit,
     isLast: Boolean,
+    isExpanded: Boolean,
+    onChapterClick: (Long) -> Unit,
+    onTitleClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
             .fillMaxWidth()
     ) {
@@ -42,18 +44,26 @@ fun NavigationChapter(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
                 .clickable(
-                    onClick = {}
+                    onClick = onTitleClick
                 )
+                .padding(16.dp)
         ) {
             Icon(
-                painter = painterResource(R.drawable.baseline_arrow_drop_up_24),
-                contentDescription = stringResource(R.string.collapse_content)
+                painter = painterResource(
+                    if (isExpanded)
+                        R.drawable.baseline_arrow_drop_up_24
+                    else
+                        R.drawable.baseline_arrow_drop_down_24
+                ),
+                contentDescription = stringResource(
+                    if (isExpanded)
+                        R.string.collapse_content
+                    else
+                        R.string.expand_content
+                )
             )
-            Column(
-
-            ) {
+            Column {
                 contentUi.title.forEach { title ->
                     Text(
                         text = title,
@@ -65,35 +75,48 @@ fun NavigationChapter(
         HorizontalDivider(
             color = MaterialTheme.colorScheme.outline
         )
-        contentUi.chapters.forEachIndexed { index, chapter ->
+        AnimatedVisibility(
+            visible = isExpanded
+        ) {
             Column(
+//                verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clickable(
-                        onClick = {
-                            onChapterClick(chapter.elementId)
-                        }
-                    )
+//                    .padding(top = 16.dp)
             ) {
-                chapter.title.forEach { title ->
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.chapterTitle,
-                        fontWeight = if (chapter.isSelected) FontWeight.Bold else FontWeight.Normal
-                    )
+                contentUi.chapters.forEachIndexed { index, chapter ->
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(
+                                onClick = {
+                                    onChapterClick(chapter.elementId)
+                                }
+                            )
+                            .padding(16.dp)
+                    ) {
+                        chapter.title.forEach { title ->
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.chapterTitle,
+                                fontWeight = if (chapter.isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
+                    }
+                    if (index != contentUi.chapters.lastIndex) {
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
                 }
-            }
-            if (index != contentUi.chapters.lastIndex) {
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outline
-                )
+
+                if (!isLast)
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outline
+                    )
             }
         }
-        if (!isLast)
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outline
-            )
     }
 }
 
@@ -104,7 +127,9 @@ private fun NavigationChapterPreview() {
         NavigationChapter(
             contentUi = PreviewModel.contents[0],
             isLast = false,
-            onChapterClick = {}
+            onChapterClick = {},
+            onTitleClick = {},
+            isExpanded = false
         )
     }
 }

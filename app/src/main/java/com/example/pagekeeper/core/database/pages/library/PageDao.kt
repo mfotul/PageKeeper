@@ -68,6 +68,20 @@ interface PageDao {
     fun observerChaptersByBookId(id: Long): Flow<List<ElementEntity>>
 
     @Query("""
+        SELECT *
+    FROM (
+    SELECT *, 
+           ROW_NUMBER() OVER (
+               PARTITION BY sectionId 
+               ORDER BY elementId
+           ) as row_num
+    FROM elemententity
+    WHERE bookid = :bookId
+) WHERE row_num = 1    
+    """)
+    fun observerChaptersByBookIdAndSectionId(bookId: Long): Flow<List<ElementEntity>>
+
+    @Query("""
         SELECT COUNT(*) AS row_index
         FROM elemententity 
         WHERE bookId = :bookId AND elementId <= :elementId

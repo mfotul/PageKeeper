@@ -22,6 +22,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
@@ -60,8 +61,8 @@ class ReaderViewModel(
 
     val bookPager = state
         .filterNotNull()
-        .distinctUntilChangedBy {
-            it.fonSizeChangeCounter
+        .distinctUntilChanged { old, new ->
+            old.fontSize == new.fontSize && old.readingPositionIndex == new.readingPositionIndex
         }
         .flatMapLatest { state ->
             Pager(
@@ -145,6 +146,13 @@ class ReaderViewModel(
             )
 
             is ReaderAction.OnChapterClick -> onChapterClick(action.currentElementOnTop)
+            is ReaderAction.OnChapterSelected -> onChapterSelected(action.index)
+        }
+    }
+
+    private fun onChapterSelected(index: Int) {
+        _state.update {
+            it?.copy(readingPositionIndex = index)
         }
     }
 

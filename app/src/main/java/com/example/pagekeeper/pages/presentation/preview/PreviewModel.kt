@@ -93,11 +93,12 @@ data object PreviewModel {
 
     val contents = listOf(
         ContentUi(
+            id = 0,
             title = listOf("Title 1", "Subtitle 1"),
             chapters = listOf(
                 ChapterUi(
                     elementId = 0,
-                    title = listOf("Chapter 1")
+                    title = listOf("Chapter 1", "Subchapter 1")
                 ),
                 ChapterUi(
                     elementId = 1,
@@ -118,6 +119,7 @@ data object PreviewModel {
             )
         ),
         ContentUi(
+            id = 1,
             title = listOf("Title 2", "Subtitle 2"),
             chapters = listOf(
                 ChapterUi(

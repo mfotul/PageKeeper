@@ -5,5 +5,6 @@ import com.example.pagekeeper.pages.presentation.navigation.models.ContentUi
 
 @Stable
 data class NavigationState(
-    val contents: List<ContentUi> = emptyList()
+    val contents: List<ContentUi> = emptyList(),
+    val expandedContentId: Int = 0
 )

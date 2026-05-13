@@ -33,8 +33,6 @@ fun ReaderTopAppBar(
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-
-
     TopAppBar(
         navigationIcon = {
             IconButton(

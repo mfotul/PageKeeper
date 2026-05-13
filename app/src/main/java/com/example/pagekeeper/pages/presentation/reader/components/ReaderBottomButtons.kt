@@ -30,7 +30,6 @@ import com.example.pagekeeper.core.presentation.designsystem.theme.loaderSeconda
 @Composable
 fun ReaderBottomButtons(
     isAutoRotate: Boolean,
-    isVisible: Boolean,
     isTablet: Boolean,
     progress: () -> Float,
     onChaptersClick: () -> Unit,
@@ -40,15 +39,7 @@ fun ReaderBottomButtons(
 ) {
     Column(
         modifier = modifier
-            .then(
-                if (isVisible)
-                    Modifier
-                else
-                    Modifier
-                        .height(0.dp)
-            )
             .background(MaterialTheme.colorScheme.bgBottomNav)
-            .animateContentSize()
     ) {
         Text(
             text = stringResource(R.string.progress, (progress() * 100).toInt()),
@@ -155,7 +146,6 @@ private fun ReaderBottomButtonsPreview() {
     PageKeeperTheme {
         ReaderBottomButtons(
             isAutoRotate = false,
-            isVisible = true,
             isTablet = false,
             progress = { 0.45f },
             onChaptersClick = {},

@@ -62,10 +62,11 @@ fun Element.toChapterUi(): ChapterUi {
 }
 
 fun Map<Int, Map<Int, List<ChapterUi>>>.toContentsUi(bookName: String): List<ContentUi> {
-    return this.values.map { sectionsMap ->
+    return this.values.mapIndexed { index, sectionsMap ->
         val titleElement = sectionsMap[0]?.firstOrNull()?.title
 
         ContentUi(
+            id = index,
             title = titleElement ?: listOf(bookName),
             chapters = sectionsMap.filterKeys { it != 0 }.values.flatten()
         )

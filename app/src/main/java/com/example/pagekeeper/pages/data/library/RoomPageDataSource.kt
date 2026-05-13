@@ -85,6 +85,16 @@ class RoomPageDataSource(
             }
     }
 
+    override fun observerChaptersByBookIdAndSectionId(id: Long): Flow<List<Element>> {
+        return pageDao
+            .observerChaptersByBookIdAndSectionId(id)
+            .map {
+                it.map { element ->
+                    element.toElement()
+                }
+            }
+    }
+
     override fun getIndexOfElementByBookId(
         bookId: Long,
         elementId: Long
