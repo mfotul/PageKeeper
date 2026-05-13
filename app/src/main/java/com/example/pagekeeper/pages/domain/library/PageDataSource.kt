@@ -1,6 +1,5 @@
 package com.example.pagekeeper.pages.domain.library
 
-import com.example.pagekeeper.core.database.pages.reader.ElementEntity
 import com.example.pagekeeper.pages.domain.reader.Element
 import kotlinx.coroutines.flow.Flow
 
