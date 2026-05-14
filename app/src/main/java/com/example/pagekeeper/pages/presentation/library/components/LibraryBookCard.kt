@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
@@ -26,15 +27,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Devices.TABLET
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.example.pagekeeper.R
+import com.example.pagekeeper.core.presentation.designsystem.button.PrimaryButton
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 import com.example.pagekeeper.core.presentation.designsystem.theme.icons
-import com.example.pagekeeper.R
 import com.example.pagekeeper.core.presentation.designsystem.theme.loaderSecondary
 import com.example.pagekeeper.pages.presentation.models.BookUi
 import com.example.pagekeeper.pages.presentation.preview.PreviewModel
+import com.example.pagekeeper.pages.presentation.util.thenIf
 
 @Composable
 fun LibraryBookCard(
@@ -47,6 +53,9 @@ fun LibraryBookCard(
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier,
     isSelectable: Boolean = false,
+    internalPadding: Dp = 0.dp,
+    wasRecentlyOpened: Boolean = false,
+    onContinueReadingClick: () -> Unit = {}
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -59,9 +68,15 @@ fun LibraryBookCard(
                 onLongClick = onLongClick,
             )
             .background(
-                color = if (bookUi.isSelected) MaterialTheme.colorScheme.surface else Color.Transparent,
+                color = when {
+                    bookUi.isSelected -> MaterialTheme.colorScheme.surface
+                    wasRecentlyOpened -> MaterialTheme.colorScheme.background
+                    else -> Color.Transparent
+                },
                 shape = RoundedCornerShape(8.dp)
             )
+
+            .padding(internalPadding)
     ) {
         if (isSelectable || bookUi.isSelected)
             Checkbox(
@@ -80,8 +95,14 @@ fun LibraryBookCard(
             fallback = painterResource(R.drawable.book_cover_placeholder),
             modifier = Modifier
                 .clip(RoundedCornerShape(4.dp))
-                .width(104.dp)
-                .height(156.dp)
+                .thenIf(wasRecentlyOpened) {
+                    width(160.dp)
+                    .height(240.dp)
+                }
+                .thenIf(!wasRecentlyOpened) {
+                    width(104.dp)
+                    .height(156.dp)
+                }
         )
         Column(
             verticalArrangement = Arrangement.SpaceBetween,
@@ -89,19 +110,39 @@ fun LibraryBookCard(
                 .weight(1f)
                 .fillMaxHeight(0.9f)
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                Text(
-                    text = bookUi.bookTitle,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                )
-                Text(
-                    text = bookUi.authorName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = bookUi.bookTitle,
+                        style = if (wasRecentlyOpened)
+                            MaterialTheme.typography.titleLarge
+                        else
+                            MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    )
+                    Text(
+                        text = bookUi.authorName,
+                        style = if (wasRecentlyOpened)
+                            MaterialTheme.typography.bodyMedium
+                        else
+                            MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondary,
+                    )
+                }
+                if (wasRecentlyOpened)
+                    PrimaryButton(
+                        text = stringResource(id = R.string.continue_label),
+                        onClick = onContinueReadingClick,
+                        iconRes = R.drawable.continue_reading,
+                        isCollapsed = false
+                    )
             }
             Column {
                 LinearProgressIndicator(
@@ -116,7 +157,11 @@ fun LibraryBookCard(
                     strokeCap = StrokeCap.Round,
                     gapSize = 4.dp,
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(end = 8.dp)
+                        .thenIf(wasRecentlyOpened) {
+                            padding(bottom = 8.dp)
+                        }
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -135,7 +180,11 @@ fun LibraryBookCard(
                                     id = if (bookUi.isFavorite) R.drawable.menu_favorites_active else R.drawable.favorites
                                 ),
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.icons
+                                tint = MaterialTheme.colorScheme.icons,
+                                modifier = Modifier
+                                    .thenIf(wasRecentlyOpened) {
+                                        size(28.dp)
+                                    }
                             )
                         }
                         IconButton(
@@ -146,7 +195,11 @@ fun LibraryBookCard(
                                     id = if (bookUi.isFinished) R.drawable.finished else R.drawable.finish
                                 ),
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.icons
+                                tint = MaterialTheme.colorScheme.icons,
+                                modifier = Modifier
+                                    .thenIf(wasRecentlyOpened) {
+                                        size(28.dp)
+                                    }
                             )
                         }
                         IconButton(
@@ -155,7 +208,11 @@ fun LibraryBookCard(
                             Icon(
                                 painter = painterResource(R.drawable.share),
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.icons
+                                tint = MaterialTheme.colorScheme.icons,
+                                modifier = Modifier
+                                    .thenIf(wasRecentlyOpened) {
+                                        size(28.dp)
+                                    }
                             )
                         }
                     }
@@ -165,7 +222,11 @@ fun LibraryBookCard(
                         Icon(
                             painter = painterResource(R.drawable.rounded_delete_24),
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.icons
+                            tint = MaterialTheme.colorScheme.icons,
+                            modifier = Modifier
+                                .thenIf(wasRecentlyOpened) {
+                                    size(28.dp)
+                                }
                         )
                     }
                 }
@@ -174,7 +235,7 @@ fun LibraryBookCard(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFF)
+@Preview(showBackground = true, backgroundColor = 0xFFFFFF, device = TABLET)
 @Composable
 private fun LibraryBookCardPreview() {
     PageKeeperTheme {
@@ -183,11 +244,12 @@ private fun LibraryBookCardPreview() {
             bookUi = bookUi,
             onClick = {},
             onLongClick = {},
-            isSelectable = true,
+            isSelectable = false,
             onFavoriteClick = {},
             onFinishClick = {},
             onShareClick = {},
-            onDeleteClick = {}
+            onDeleteClick = {},
+            wasRecentlyOpened = true
         )
     }
 }

@@ -37,6 +37,7 @@ fun ReaderBottomButtons(
 ) {
     Column(
         modifier = modifier
+            .fillMaxWidth()
             .background(MaterialTheme.colorScheme.bgBottomNav)
     ) {
         Text(

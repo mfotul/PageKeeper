@@ -1,20 +1,28 @@
 package com.example.pagekeeper.pages.presentation.navigation
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Devices.TABLET
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowSizeClass
 import com.example.pagekeeper.app.navigation.ResultStore
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 import com.example.pagekeeper.core.presentation.util.ObserveAsEvents
 import com.example.pagekeeper.pages.presentation.navigation.components.NavigationChapter
 import com.example.pagekeeper.pages.presentation.navigation.components.NavigationTopAppBar
 import com.example.pagekeeper.pages.presentation.preview.PreviewModel
+import com.example.pagekeeper.pages.presentation.util.thenIf
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -26,7 +34,7 @@ fun NavigationScreenRoot(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     ObserveAsEvents(viewModel.events) { event ->
-        when(event) {
+        when (event) {
             is NavigationEvent.OnChapterSelected -> {
                 resultStore.setResult("chapterIndex", event.index)
                 onBackClick()
@@ -51,6 +59,11 @@ fun NavigationScreen(
     onAction: (NavigationAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val isTablet =
+        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+                && windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+
     Scaffold(
         topBar = {
             NavigationTopAppBar(
@@ -60,12 +73,14 @@ fun NavigationScreen(
         modifier = modifier
     ) { innerPadding ->
         LazyColumn(
-//            verticalArrangement = Arrangement.spacedBy(16.dp),
-//            contentPadding = PaddingValues(vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .padding(innerPadding)
+                .fillMaxSize()
         ) {
-            itemsIndexed(items = state.contents, key = { _, contentUi -> contentUi.title }) { index, contentUi ->
+            itemsIndexed(
+                items = state.contents,
+                key = { _, contentUi -> contentUi.id }) { index, contentUi ->
                 NavigationChapter(
                     contentUi = contentUi,
                     isLast = index == state.contents.lastIndex,
@@ -75,14 +90,18 @@ fun NavigationScreen(
                     onTitleClick = {
                         onAction(NavigationAction.OnTitleClick(contentUi))
                     },
-                    isExpanded = state.expandedContentId == contentUi.id
+                    isExpanded = state.expandedContentId == contentUi.id,
+                    modifier = Modifier
+                        .thenIf(isTablet){
+                            widthIn(max = 600.dp)
+                        }
                 )
             }
         }
     }
 }
 
-@Preview
+@Preview(device = TABLET)
 @Composable
 private fun NavigationScreenPreview() {
     PageKeeperTheme {

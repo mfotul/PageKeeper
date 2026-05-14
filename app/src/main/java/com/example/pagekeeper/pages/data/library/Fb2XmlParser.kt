@@ -52,7 +52,7 @@ class Fb2XmlParser(
                     libraryStorage.saveBookTemporarily(uri) ?: return@withContext Result.Error(
                         ParserError.IO_ERROR
                     )
-                val bookUUID = "book-" + UUID.randomUUID().toString()
+                val bookUUID = LibraryStorage.PERSISTENT_BOOK_PREFIX + "-" + UUID.randomUUID().toString()
                 val documentIds = pageDataSource.observeDocumentsId().firstOrNull() ?: emptyList()
                 File(tempFilePath).inputStream().buffered().use { bufferedStream ->
                     val parser = Xml.newPullParser().apply {

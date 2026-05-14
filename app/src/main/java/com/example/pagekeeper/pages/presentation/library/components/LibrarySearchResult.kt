@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.example.pagekeeper.R
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 import com.example.pagekeeper.pages.presentation.models.BookUi
+import com.example.pagekeeper.pages.presentation.util.thenIf
 
 @Composable
 fun LibrarySearchResult(
@@ -44,13 +45,9 @@ fun LibrarySearchResult(
             color = MaterialTheme.colorScheme.outline,
             modifier = Modifier
                 .fillMaxWidth()
-                .then(
-                    if (isTablet)
-                        Modifier.padding(horizontal = 16.dp)
-                    else
-                        Modifier
-                )
-
+                .thenIf(isTablet) {
+                    padding(horizontal = 16.dp)
+                }
         )
         if (bookUis.isEmpty())
             Column(

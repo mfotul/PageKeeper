@@ -1,7 +1,6 @@
 package com.example.pagekeeper.pages.presentation.library.components
 
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

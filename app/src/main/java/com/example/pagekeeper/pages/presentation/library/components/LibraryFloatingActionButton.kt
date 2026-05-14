@@ -23,7 +23,7 @@ fun LibraryFloatingActionButton(
     ) {
         Icon(
             painter = painterResource(R.drawable.read),
-            contentDescription = stringResource(R.string.read_recently_opened_book),
+            contentDescription = stringResource(R.string.continue_reading),
             tint = MaterialTheme.colorScheme.background
         )
     }

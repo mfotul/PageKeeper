@@ -1,6 +1,5 @@
 package com.example.pagekeeper.pages.presentation.library.components
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +52,7 @@ fun LibraryNavigationalRail(
     selectedScreen: Screen,
     onAction: (LibraryAction) -> Unit,
     isEnabled: Boolean,
+    recentlyOpenedBookCard: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
@@ -157,19 +157,25 @@ fun LibraryNavigationalRail(
                 }
             }
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        color = MaterialTheme.colorScheme.tabletBlockBackground,
-                        shape = RoundedCornerShape(28.dp)
-                    )
-                    .animateContentSize()
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                content()
+                recentlyOpenedBookCard()
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            color = MaterialTheme.colorScheme.tabletBlockBackground,
+                            shape = RoundedCornerShape(28.dp)
+                        )
+                ) {
+                    content()
+                }
             }
         }
     } else
-        content()
+        Column {
+            content()
+        }
 }
 
 @Preview(device = TABLET)
@@ -183,6 +189,9 @@ private fun LibraryNavigationalRailPreview() {
             LibraryNavigationalRail(
                 selectedScreen = Screen.LIBRARY,
                 isEnabled = true,
+                recentlyOpenedBookCard = {
+
+                },
                 onAction = {}
             ) {
 

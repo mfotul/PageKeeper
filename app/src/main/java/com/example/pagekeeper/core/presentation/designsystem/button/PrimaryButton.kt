@@ -71,7 +71,7 @@ private fun PrimaryButtonPreview() {
             text = stringResource(id = R.string.import_book),
             onClick = {},
             iconRes = R.drawable.import_book,
-            isCollapsed = true
+            isCollapsed = false
         )
     }
 }

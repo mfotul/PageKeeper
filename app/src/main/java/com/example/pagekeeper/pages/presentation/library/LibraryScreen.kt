@@ -15,6 +15,8 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.rememberDrawerState
@@ -25,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Devices.PHONE
+import androidx.compose.ui.tooling.preview.Devices.TABLET
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -33,6 +36,7 @@ import androidx.window.core.layout.WindowSizeClass
 import com.example.pagekeeper.R
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 import com.example.pagekeeper.core.presentation.util.ObserveAsEvents
+import com.example.pagekeeper.pages.presentation.library.components.LibraryBookCard
 import com.example.pagekeeper.pages.presentation.library.components.LibraryDialog
 import com.example.pagekeeper.pages.presentation.library.components.LibraryEmptyList
 import com.example.pagekeeper.pages.presentation.library.components.LibraryFloatingActionButton
@@ -170,9 +174,12 @@ fun LibraryScreen(
                 LibraryNavigationalRail(
                     selectedScreen = state.screen,
                     onAction = onAction,
-                    isEnabled = isTablet
+                    isEnabled = isTablet,
+                    recentlyOpenedBookCard = {
+
+                    }
                 ) {
-                    if (isTablet)
+                    if (isTablet) {
                         if (state.screenType == ScreenType.SELECTED)
                             LibrarySelectedTopRow(
                                 onBackClick = { onAction(LibraryAction.OnBackClick) },
@@ -190,6 +197,55 @@ fun LibraryScreen(
                                 modifier = Modifier
                                     .padding(16.dp)
                             )
+
+                        if (state.recentlyOpenedBooks.isNotEmpty()) {
+                            val bookUi =
+                                state.books.firstOrNull { it.id == state.recentlyOpenedBooks.first() }
+                            bookUi?.let { bookUi ->
+                                LibraryBookCard(
+                                    bookUi = bookUi,
+                                    onClick = { onAction(LibraryAction.OnBookClick(bookUi.id)) },
+                                    onLongClick = { onAction(LibraryAction.OnBookLongClick(bookUi.id)) },
+                                    onFavoriteClick = {
+                                        onAction(
+                                            LibraryAction.OnBookFavoriteClick(
+                                                bookUi.id
+                                            )
+                                        )
+                                    },
+                                    onFinishClick = {
+                                        onAction(
+                                            LibraryAction.OnBookFinishClick(
+                                                bookUi.id
+                                            )
+                                        )
+                                    },
+                                    onShareClick = { onAction(LibraryAction.OnBookShareClick(bookUi.id)) },
+                                    onDeleteClick = {
+                                        onAction(
+                                            LibraryAction.OnBookDeleteOneClick(
+                                                bookUi.id
+                                            )
+                                        )
+                                    },
+                                    onContinueReadingClick = {
+                                        onAction(LibraryAction.OnBookClick(bookUi.id))
+                                    },
+                                    internalPadding = 16.dp,
+                                    wasRecentlyOpened = true,
+                                    modifier = Modifier
+                                        .padding(horizontal = 8.dp)
+                                )
+                            }
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier
+                                    .padding(top = 16.dp)
+                                    .padding(horizontal = 8.dp)
+                            )
+                        }
+
+                    }
                     if (state.screenType == ScreenType.SEARCH)
                         LibrarySearchResult(
                             bookUis = state.searchResult,
@@ -200,12 +256,15 @@ fun LibraryScreen(
                         )
                     else if (state.books.isNotEmpty())
                         LibraryList(
-                            bookUis = state.books,
+                            bookUis = if (isTablet)
+                                state.books.filterNot { it.id == state.recentlyOpenedBooks.firstOrNull() }
+                            else
+                                state.books,
                             isTablet = isTablet,
                             isSelectable = state.screenType == ScreenType.SELECTED,
                             onAction = onAction,
                         )
-                    else
+                     else
                         when (state.screen) {
                             Screen.LIBRARY -> LibraryEmptyList(
                                 title = R.string.your_library_is_empty,
@@ -303,17 +362,38 @@ private fun getShareMultipleBooksIntent(uris: ArrayList<Uri>): Intent {
     }
 }
 
-@Preview(device = PHONE)
+@Preview(device = TABLET)
 @Composable
-private fun LibraryScreenPreview() {
+private fun LibraryScreenTabletPreview() {
     PageKeeperTheme {
         LibraryScreen(
             state = LibraryState(
                 books = PreviewModel.books,
 //                books = emptyList(),
-                screenType = ScreenType.SELECTED,
+                screenType = ScreenType.LIST,
                 dialogType = DialogType.NONE,
-                booksPendingDeletion = listOf(PreviewModel.books[0])
+                booksPendingDeletion = listOf(),
+                recentlyOpenedBooks = listOf(1)
+            ),
+            drawerState = rememberDrawerState(DrawerValue.Closed),
+            searchFieldState = rememberTextFieldState(),
+            onAction = {}
+        )
+    }
+}
+
+@Preview(device = PHONE)
+@Composable
+private fun LibraryScreenPhonePreview() {
+    PageKeeperTheme {
+        LibraryScreen(
+            state = LibraryState(
+                books = PreviewModel.books,
+//                books = emptyList(),
+                screenType = ScreenType.LIST,
+                dialogType = DialogType.NONE,
+                booksPendingDeletion = listOf(),
+                recentlyOpenedBooks = listOf(1)
             ),
             drawerState = rememberDrawerState(DrawerValue.Closed),
             searchFieldState = rememberTextFieldState(),

@@ -23,6 +23,7 @@ import com.example.pagekeeper.R
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 import com.example.pagekeeper.core.presentation.designsystem.theme.bgBottomNav
 import com.example.pagekeeper.core.presentation.designsystem.theme.icons
+import com.example.pagekeeper.pages.presentation.util.thenIf
 
 @Composable
 fun ReaderTopAppBar(
@@ -75,12 +76,9 @@ fun ReaderTopAppBar(
             titleContentColor = MaterialTheme.colorScheme.onPrimary
         ),
         modifier = modifier
-            .then(
-                if (isVisible)
-                    Modifier
-                else
-                    Modifier.height(0.dp)
-            )
+            .thenIf(!isVisible) {
+                height(0.dp)
+            }
             .animateContentSize()
 
     )
