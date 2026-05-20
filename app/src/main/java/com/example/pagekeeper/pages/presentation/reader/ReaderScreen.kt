@@ -73,6 +73,7 @@ import org.koin.androidx.compose.koinViewModel
 fun ReaderScreenRoot(
     onBackClick: () -> Unit,
     onChapterClick: (Long, Long?) -> Unit,
+    onBookmarksClick: (Long) -> Unit,
     resultStore: ResultStore,
     viewModel: ReaderViewModel = koinViewModel()
 ) {
@@ -99,6 +100,8 @@ fun ReaderScreenRoot(
                 event.bookId,
                 event.currentElementIdOnTop
             )
+
+            is ReaderEvent.OnBookmarksClick -> onBookmarksClick(event.bookId)
         }
     }
 
@@ -297,7 +300,12 @@ fun ReaderScreen(
                             else
                                 null
                             onAction(ReaderAction.OnChapterClick(elementUi))
-                        }
+                        },
+                        onBookmarksClick = { onAction(ReaderAction.OnBookmarksClick(
+                            readingPositionIndex = listState.firstVisibleItemIndex,
+                            readingPositionOffset = listState.firstVisibleItemScrollOffset,
+                            readingProgress = progress
+                        )) }
                     )
             }
 

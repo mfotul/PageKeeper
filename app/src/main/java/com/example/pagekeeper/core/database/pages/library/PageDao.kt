@@ -7,6 +7,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Upsert
 import com.example.pagekeeper.core.database.book_element_relation.BookWithElementCount
+import com.example.pagekeeper.core.database.pages.navigation.ChapterEntity
 import com.example.pagekeeper.core.database.pages.reader.ElementEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -82,12 +83,14 @@ interface PageDao {
     fun observerChaptersByBookIdAndSectionId(bookId: Long): Flow<List<ElementEntity>>
 
     @Query("""
-        SELECT COUNT(*) AS row_index
+        SELECT COUNT(*)
         FROM elemententity 
         WHERE bookId = :bookId AND elementId <= :elementId
-        ORDER BY elementId
     """)
     fun getIndexOfElementByBookId(bookId: Long, elementId: Long): Flow<Int>
+
+    @Query("SELECT * FROM chapterentity ORDER BY id")
+    fun observeChapters(): Flow<List<ChapterEntity>>
 
     @Query("UPDATE bookentity SET isSelected=0")
     suspend fun removeSelected()
@@ -103,4 +106,7 @@ interface PageDao {
 
     @Query("DELETE FROM elemententity WHERE bookId = :bookId")
     suspend fun deleteElementsByBookId(bookId: Long)
+
+    @Insert
+    suspend fun insertChapter(chapters: List<ChapterEntity>)
 }

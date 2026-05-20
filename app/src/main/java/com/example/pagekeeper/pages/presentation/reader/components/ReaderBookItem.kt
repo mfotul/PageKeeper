@@ -33,6 +33,7 @@ fun ReaderBookItem(
             is Fb2BlockElementUi.Cite -> {
                 Column(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .drawBehind {
                             drawLine(
                                 color = borderColor,
@@ -98,7 +99,7 @@ fun ReaderBookItem(
 private fun ReaderBookItemPreview() {
     PageKeeperTheme {
         ReaderBookItem(
-            PreviewModel.element[0].content
+            PreviewModel.element[2].content
         )
     }
 }

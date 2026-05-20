@@ -44,4 +44,15 @@
     <string name="expand_content">Expand Content</string>
     <string name="continue_reading">Continue reading</string>
     <string name="continue_label">Continue</string>
+    <string name="bookmarks_label">Bookmarks</string>
+    <string name="bookmarks">Bookmarks</string>
+    <string name="no_bookmarks_added">No bookmarks added</string>
+    <string name="bookmarks_from_your_books_will_appear_here">Bookmarks from your books will appear here</string>
+    <string name="add_bookmark">Add bookmark</string>
+    <string name="save">Save</string>
+    <string name="blue">Blue color</string>
+    <string name="green">Green oolor</string>
+    <string name="yellow">Yellow color</string>
+    <string name="red">Red color</string>
+    <string name="purple">Purple color</string>
 </resources>

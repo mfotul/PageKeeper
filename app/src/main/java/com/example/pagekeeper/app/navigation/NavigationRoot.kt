@@ -7,6 +7,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.example.pagekeeper.pages.presentation.bookmarks.BookmarksScreenRoot
 import com.example.pagekeeper.pages.presentation.library.LibraryScreenRoot
 import com.example.pagekeeper.pages.presentation.navigation.NavigationScreenRoot
 import com.example.pagekeeper.pages.presentation.reader.ReaderScreenRoot
@@ -43,6 +44,9 @@ fun NavigationRoot(
                     onChapterClick = { bookId, elementId ->
                         backStack.add(NavigationRoute.NavigationScreen(bookId, elementId))
                     },
+                    onBookmarksClick = { bookId ->
+                        backStack.add(NavigationRoute.BookmarksScreen(bookId))
+                    },
                     resultStore = resultStore,
                     viewModel = koinViewModel { parametersOf(route.bookId) }
                 )
@@ -55,6 +59,14 @@ fun NavigationRoot(
                     },
                     resultStore = resultStore,
                     viewModel = koinViewModel { parametersOf(route.bookId, route.elementId) }
+                )
+            }
+            entry<NavigationRoute.BookmarksScreen> { route ->
+                BookmarksScreenRoot(
+                    onBackClick = {
+                        backStack.removeLastOrNull()
+                    },
+                    viewModel = koinViewModel { parametersOf(route.bookId) }
                 )
             }
         }

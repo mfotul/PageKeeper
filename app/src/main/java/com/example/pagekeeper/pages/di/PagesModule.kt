@@ -8,6 +8,7 @@ import com.example.pagekeeper.pages.domain.library.LibraryStorage
 import com.example.pagekeeper.pages.domain.library.PageDataSource
 import com.example.pagekeeper.pages.domain.library.XmlParser
 import com.example.pagekeeper.pages.domain.library.PagePreferences
+import com.example.pagekeeper.pages.presentation.bookmarks.BookmarksViewModel
 import com.example.pagekeeper.pages.presentation.library.LibraryViewModel
 import com.example.pagekeeper.pages.presentation.navigation.NavigationViewModel
 import com.example.pagekeeper.pages.presentation.reader.ReaderViewModel
@@ -25,4 +26,5 @@ val pagesModule = module {
     viewModelOf(::LibraryViewModel)
     viewModelOf(::ReaderViewModel)
     viewModelOf(::NavigationViewModel)
+    viewModelOf(::BookmarksViewModel)
 }

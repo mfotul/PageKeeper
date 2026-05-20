@@ -1,5 +1,6 @@
 package com.example.pagekeeper.pages.domain.library
 
+import com.example.pagekeeper.pages.domain.navigation.Chapter
 import com.example.pagekeeper.pages.domain.reader.Element
 import kotlinx.coroutines.flow.Flow
 
@@ -16,9 +17,11 @@ interface PageDataSource {
     fun observerChaptersByBookId(id: Long): Flow<List<Element>>
     fun observerChaptersByBookIdAndSectionId(id: Long): Flow<List<Element>>
     fun getIndexOfElementByBookId(bookId: Long, elementId: Long): Flow<Int>
+    fun observeChapters(): Flow<List<Chapter>>
     suspend fun removeSelected()
     suspend fun upsertBook(book: Book)
     suspend fun deleteBook(book: List<Book>)
     suspend fun insertElement(section: Element)
     suspend fun deleteElementsByBookId(bookId: Long)
+    suspend fun insertChapter(chapters: List<Chapter>)
 }

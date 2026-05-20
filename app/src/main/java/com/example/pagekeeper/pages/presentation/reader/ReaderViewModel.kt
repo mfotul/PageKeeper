@@ -125,10 +125,11 @@ class ReaderViewModel(
     fun onAction(action: ReaderAction) {
         when (action) {
             ReaderAction.OnLockScreenClick -> onLockScreen()
-            is ReaderAction.OnBackClick -> onBackClick(
+            is ReaderAction.OnBackClick -> onSaveAndNavigate(
                 readingPositionIndex = action.readingPositionIndex,
                 readingPositionOffset = action.readingPositionOffset,
                 readingProgress = action.readingProgress,
+                event = ReaderEvent.OnBackClick
             )
 
             ReaderAction.OnFavoritesClick -> onFavoriteClick()
@@ -146,6 +147,12 @@ class ReaderViewModel(
 
             is ReaderAction.OnChapterClick -> onChapterClick(action.currentElementOnTop)
             is ReaderAction.OnChapterSelected -> onChapterSelected(action.index)
+            is ReaderAction.OnBookmarksClick -> onSaveAndNavigate(
+                readingPositionIndex = action.readingPositionIndex,
+                readingPositionOffset = action.readingPositionOffset,
+                readingProgress = action.readingProgress,
+                event = ReaderEvent.OnBookmarksClick(bookId)
+            )
         }
     }
 
@@ -161,10 +168,11 @@ class ReaderViewModel(
         }
     }
 
-    private fun onBackClick(
+    private fun onSaveAndNavigate(
         readingPositionIndex: Int,
         readingPositionOffset: Int,
         readingProgress: Float,
+        event: ReaderEvent
     ){
         viewModelScope.launch {
             pageDataSource
@@ -179,7 +187,7 @@ class ReaderViewModel(
                         )
                     )
                 }
-            eventChannel.send(ReaderEvent.OnBackClick)
+            eventChannel.send(event)
         }
     }
 

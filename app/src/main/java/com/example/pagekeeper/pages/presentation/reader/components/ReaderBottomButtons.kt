@@ -31,6 +31,7 @@ fun ReaderBottomButtons(
     isTablet: Boolean,
     progress: () -> Float,
     onChaptersClick: () -> Unit,
+    onBookmarksClick: () -> Unit,
     onRotateClick: () -> Unit,
     onFonSizeClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -76,6 +77,30 @@ fun ReaderBottomButtons(
                     Text(
                         text = stringResource(
                             R.string.chapters
+                        )
+                    )
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.icons,
+                    indicatorColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+            NavigationBarItem(
+                selected = false,
+                onClick = onBookmarksClick,
+                icon = {
+                    Icon(
+                        painter = painterResource(
+                            R.drawable.bookmark
+                        ),
+                        contentDescription = stringResource(R.string.bookmarks_label)
+                    )
+                },
+                label = {
+                    Text(
+                        text = stringResource(
+                            R.string.bookmarks_label
                         )
                     )
                 },
@@ -148,6 +173,7 @@ private fun ReaderBottomButtonsPreview() {
             isTablet = false,
             progress = { 0.45f },
             onChaptersClick = {},
+            onBookmarksClick = {},
             onRotateClick = {},
             onFonSizeClick = {}
         )

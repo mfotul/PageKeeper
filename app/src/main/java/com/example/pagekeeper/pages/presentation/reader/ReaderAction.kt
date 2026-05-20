@@ -17,4 +17,9 @@ sealed interface ReaderAction {
     data class OnSliderPositionChange(val fontSize: Float) : ReaderAction
     data class OnChapterClick(val currentElementOnTop: ElementUi?) : ReaderAction
     data class OnChapterSelected(val index: Int) : ReaderAction
+    data class OnBookmarksClick(
+        val readingPositionIndex: Int,
+        val readingPositionOffset: Int,
+        val readingProgress: Float
+    ) : ReaderAction
 }

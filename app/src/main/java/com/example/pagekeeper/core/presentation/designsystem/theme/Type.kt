@@ -93,3 +93,12 @@ val Typography.chapterTitle: TextStyle
         fontSize = 13.sp,
         lineHeight = 16.sp,
     )
+
+val Typography.buttonMedium: TextStyle
+    get() = TextStyle(
+        fontFamily = Roboto,
+        fontWeight = FontWeight.Medium,
+        fontSize = 15.sp,
+        lineHeight = 18.sp,
+        letterSpacing = 0.sp,
+    )

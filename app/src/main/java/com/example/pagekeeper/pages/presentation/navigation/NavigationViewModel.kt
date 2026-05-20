@@ -87,6 +87,7 @@ class NavigationViewModel(
             .launchIn(viewModelScope)
     }
 
+
     fun onAction(action: NavigationAction) {
         when (action) {
             NavigationAction.OnBackClick -> {}
@@ -126,34 +127,11 @@ class NavigationViewModel(
         return chapters.getOrNull(lowerIndex)
     }
 
-    private fun contentWithSelectedChapter(
-        contents: List<ContentUi>,
-        targetId: Long
-    ): Pair<Int, List<ContentUi>> {
-        val chapters = contents.flatMap { content -> content.chapters }
-        val targetChapter = findChapterJustLower(chapters, targetId)
-
-        var expandedContentId = 0
-        val contentWithTargetChapter = contents.map { content ->
-            val chapters = content.chapters.map { chapter ->
-                if (chapter.elementId == targetChapter?.elementId) {
-                    expandedContentId = content.id
-                    chapter.copy(isSelected = true)
-                } else {
-                    chapter
-                }
-            }
-            content.copy(chapters = chapters)
-        }
-        return expandedContentId to contentWithTargetChapter
-    }
-
     private fun elementsToContentsUi(
         elements: List<Element>,
         title: String
     ): List<ContentUi> {
         return elements
-            .asSequence()
             .filter { element ->
                 val content = element.content
                 if (content is Fb2BlockElement.Paragraph) {
@@ -188,5 +166,27 @@ class NavigationViewModel(
                         }
                     }
             }.toContentsUi(bookName = title)
+    }
+
+    private fun contentWithSelectedChapter(
+        contents: List<ContentUi>,
+        targetId: Long
+    ): Pair<Int, List<ContentUi>> {
+        val chapters = contents.flatMap { content -> content.chapters }
+        val targetChapter = findChapterJustLower(chapters, targetId)
+
+        var expandedContentId = 0
+        val contentWithTargetChapter = contents.map { content ->
+            val chapters = content.chapters.map { chapter ->
+                if (chapter.elementId == targetChapter?.elementId) {
+                    expandedContentId = content.id
+                    chapter.copy(isSelected = true)
+                } else {
+                    chapter
+                }
+            }
+            content.copy(chapters = chapters)
+        }
+        return expandedContentId to contentWithTargetChapter
     }
 }
