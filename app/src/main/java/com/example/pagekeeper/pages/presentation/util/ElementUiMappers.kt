@@ -6,10 +6,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.example.pagekeeper.pages.domain.reader.Element
 import com.example.pagekeeper.pages.domain.reader.Fb2BlockElement
-import com.example.pagekeeper.pages.presentation.navigation.models.ContentUi
-import com.example.pagekeeper.pages.presentation.reader.models.ElementUi
 import com.example.pagekeeper.pages.presentation.models.Fb2BlockElementUi
-import com.example.pagekeeper.pages.presentation.navigation.models.ChapterUi
+import com.example.pagekeeper.pages.presentation.reader.models.ElementUi
 
 fun Element.toElementUi(fontSize: TextUnit): ElementUi {
     return ElementUi(

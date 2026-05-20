@@ -1,7 +1,5 @@
 package com.example.pagekeeper.pages.domain.library
 
-import com.example.pagekeeper.core.database.content_chapter_relation.ContentWithChapters
-import com.example.pagekeeper.pages.domain.navigation.Chapter
 import com.example.pagekeeper.pages.domain.navigation.Content
 import com.example.pagekeeper.pages.domain.reader.Element
 import kotlinx.coroutines.flow.Flow
