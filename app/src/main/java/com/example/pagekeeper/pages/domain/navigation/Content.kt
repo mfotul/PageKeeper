@@ -1,10 +1,10 @@
 package com.example.pagekeeper.pages.domain.navigation
 
-import com.example.pagekeeper.pages.presentation.navigation.models.ChapterUi
+import com.example.pagekeeper.pages.domain.reader.Fb2BlockElement
 
 data class Content(
-    val id: Int,
+    val id: Int? = null,
     val bookId: Long,
-    val title: List<String>,
-    val chapters: List<ChapterUi>
+    val title: Fb2BlockElement,
+    val chapters: List<Chapter>
 )

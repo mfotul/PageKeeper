@@ -5,10 +5,9 @@ import androidx.room.PrimaryKey
 import com.example.pagekeeper.pages.data.reader.Fb2BlockElementDto
 
 @Entity
-data class ChapterEntity(
+data class ContentEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
-    val contentId: Int,
-    val elementId: Long,
+    val bookId: Long,
     val title: Fb2BlockElementDto,
 )

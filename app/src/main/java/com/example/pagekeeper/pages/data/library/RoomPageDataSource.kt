@@ -3,11 +3,14 @@ package com.example.pagekeeper.pages.data.library
 import com.example.pagekeeper.core.database.pages.library.PageDao
 import com.example.pagekeeper.pages.data.navigation.toChapter
 import com.example.pagekeeper.pages.data.navigation.toChapterEntity
+import com.example.pagekeeper.pages.data.navigation.toContent
+import com.example.pagekeeper.pages.data.navigation.toContentEntity
 import com.example.pagekeeper.pages.data.reader.toElement
 import com.example.pagekeeper.pages.data.reader.toElementEntity
 import com.example.pagekeeper.pages.domain.library.Book
 import com.example.pagekeeper.pages.domain.library.PageDataSource
 import com.example.pagekeeper.pages.domain.navigation.Chapter
+import com.example.pagekeeper.pages.domain.navigation.Content
 import com.example.pagekeeper.pages.domain.reader.Element
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -71,7 +74,7 @@ class RoomPageDataSource(
     }
 
     override fun getBookTitleWithCount(id: Long): Flow<Book?> {
-       return pageDao
+        return pageDao
             .getBookTitleWithCount(id)
             .map { book ->
                 book?.toBook()
@@ -103,12 +106,12 @@ class RoomPageDataSource(
         elementId: Long
     ): Flow<Int> = pageDao.getIndexOfElementByBookId(bookId, elementId)
 
-    override fun observeChapters(): Flow<List<Chapter>> {
+    override fun observeContentsByBookId(bookId: Long): Flow<List<Content>> {
         return pageDao
-            .observeChapters()
-            .map {
-                it.map { chapter ->
-                    chapter.toChapter()
+            .observeContentsByBookId(bookId)
+            .map { contents ->
+                contents.map { content ->
+                    content.toContent()
                 }
             }
     }
@@ -135,7 +138,11 @@ class RoomPageDataSource(
         pageDao.deleteElementsByBookId(bookId)
     }
 
-    override suspend fun insertChapter(chapters: List<Chapter>) {
-        pageDao.insertChapter(chapters.map { it.toChapterEntity() })
+    override suspend fun insertContentWithChapters(content: Content) {
+        pageDao.insertContentWithChapters(
+            content.toContentEntity(),
+            content.chapters.map { it.toChapterEntity() }
+        )
     }
+
 }

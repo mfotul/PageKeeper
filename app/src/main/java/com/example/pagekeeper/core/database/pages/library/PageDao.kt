@@ -5,9 +5,12 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
 import com.example.pagekeeper.core.database.book_element_relation.BookWithElementCount
+import com.example.pagekeeper.core.database.content_chapter_relation.ContentWithChapters
 import com.example.pagekeeper.core.database.pages.navigation.ChapterEntity
+import com.example.pagekeeper.core.database.pages.navigation.ContentEntity
 import com.example.pagekeeper.core.database.pages.reader.ElementEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -89,8 +92,9 @@ interface PageDao {
     """)
     fun getIndexOfElementByBookId(bookId: Long, elementId: Long): Flow<Int>
 
-    @Query("SELECT * FROM chapterentity ORDER BY id")
-    fun observeChapters(): Flow<List<ChapterEntity>>
+    @Transaction
+    @Query("SELECT * FROM contententity WHERE bookId = :bookId ORDER BY id")
+    fun observeContentsByBookId(bookId: Long): Flow<List<ContentWithChapters>>
 
     @Query("UPDATE bookentity SET isSelected=0")
     suspend fun removeSelected()
@@ -108,5 +112,14 @@ interface PageDao {
     suspend fun deleteElementsByBookId(bookId: Long)
 
     @Insert
+    suspend fun insertContent(content: ContentEntity): Long
+
+    @Insert
     suspend fun insertChapter(chapters: List<ChapterEntity>)
+
+    @Transaction
+    suspend fun insertContentWithChapters(content: ContentEntity, chapters: List<ChapterEntity>) {
+        val contentId = insertContent(content)
+        insertChapter(chapters.map { it.copy(contentId = contentId.toInt()) })
+    }
 }
