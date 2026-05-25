@@ -50,3 +50,13 @@ fun Fb2BlockElement.toTitleString(): List<String> {
         else -> emptyList()
     }
 }
+
+fun Fb2BlockElementUi.toTitleString(): String {
+    return when (this) {
+        is Fb2BlockElementUi.Cite -> lines[0].text
+        Fb2BlockElementUi.EmptyLine -> ""
+        is Fb2BlockElementUi.Paragraph -> text.text
+        is Fb2BlockElementUi.Subtitle -> text.text
+        is Fb2BlockElementUi.Title -> lines[0].text
+    }
+}

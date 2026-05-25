@@ -6,10 +6,13 @@ import android.util.Base64
 import android.util.Xml
 import com.example.pagekeeper.core.domain.util.ParserError
 import com.example.pagekeeper.core.domain.util.Result
+import com.example.pagekeeper.pages.data.navigation.toChapter
+import com.example.pagekeeper.pages.data.navigation.toContents
 import com.example.pagekeeper.pages.domain.library.Book
 import com.example.pagekeeper.pages.domain.library.LibraryStorage
 import com.example.pagekeeper.pages.domain.library.PageDataSource
 import com.example.pagekeeper.pages.domain.library.XmlParser
+import com.example.pagekeeper.pages.domain.navigation.Content
 import com.example.pagekeeper.pages.domain.reader.Element
 import com.example.pagekeeper.pages.domain.reader.Fb2BlockElement
 import com.example.pagekeeper.pages.domain.reader.StyledText
@@ -52,7 +55,8 @@ class Fb2XmlParser(
                     libraryStorage.saveBookTemporarily(uri) ?: return@withContext Result.Error(
                         ParserError.IO_ERROR
                     )
-                val bookUUID = LibraryStorage.PERSISTENT_BOOK_PREFIX + "-" + UUID.randomUUID().toString()
+                val bookUUID =
+                    LibraryStorage.PERSISTENT_BOOK_PREFIX + "-" + UUID.randomUUID().toString()
                 val documentIds = pageDataSource.observeDocumentsId().firstOrNull() ?: emptyList()
                 File(tempFilePath).inputStream().buffered().use { bufferedStream ->
                     val parser = Xml.newPullParser().apply {
@@ -128,10 +132,10 @@ class Fb2XmlParser(
                         val parser = Xml.newPullParser().apply {
                             setInput(bufferedStream, null)
                         }
-
                         parser.next()
                         parseBookBody(parser, book.bookId!!)
                     }
+                    generateContents(bookId)
                 }
                 Result.Success(Unit)
             } catch (e: XmlPullParserException) {
@@ -327,6 +331,7 @@ class Fb2XmlParser(
                     bodyId = bodyId,
                     sectionId = sectionNumber++
                 )
+
                 "title" -> {
                     val element = Element(
                         bookId = bookId,
@@ -336,6 +341,7 @@ class Fb2XmlParser(
                     )
                     pageDataSource.insertElement(element)
                 }
+
                 else -> skip(parser)
             }
         }
@@ -466,5 +472,72 @@ class Fb2XmlParser(
                 XmlPullParser.START_TAG -> depth++
             }
         }
+    }
+
+    private suspend fun generateContents(bookId: Long) {
+        var backupSource = false
+        pageDataSource
+            .observeBookById(bookId)
+            .firstOrNull()
+            ?.let { book ->
+                val elements = pageDataSource
+                    .observerChaptersByBookId(bookId)
+                    .firstOrNull()
+                    ?.let {
+                        it.ifEmpty {
+                            backupSource = true
+                            pageDataSource.observerChaptersWithSectionByBookId(bookId)
+                                .firstOrNull()
+                        }
+                    } ?: emptyList()
+
+                val contents = elementsToContents(elements, book, backupSource)
+
+                contents.forEach {
+                    pageDataSource.insertContentWithChapters(it)
+                }
+            }
+    }
+
+    private fun elementsToContents(
+        elements: List<Element>,
+        book: Book,
+        backupSource: Boolean
+    ): List<Content> {
+        return elements
+            .filter { element ->
+                val content = element.content
+                if (content is Fb2BlockElement.Paragraph) {
+                    content.text.firstOrNull()?.text?.startsWith(
+                        "chapter",
+                        ignoreCase = true
+                    ) == true || backupSource
+                } else {
+                    true
+                }
+            }
+            .let { elements ->
+                if (backupSource)
+                    elements.mapIndexed { index, element ->
+                        element.copy(
+                            content = Fb2BlockElement.Title(
+                                lines = listOf(listOf(StyledText(text = "Chapter ${index + 1}")))
+                            )
+                        )
+                    }
+                else
+                    elements
+            }
+            .groupBy { it.bodyId }
+            .mapValues { (_, elements) ->
+                elements
+                    .groupBy { it.sectionId }
+                    .filterValues { it.size == 1 }
+                    .mapValues { (_, sectionElements) ->
+                        sectionElements.map { element ->
+                            element.toChapter()
+                        }
+                    }
+            }.toContents(book)
     }
 }

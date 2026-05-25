@@ -1,15 +1,16 @@
 package com.example.pagekeeper.pages.data.library
 
 import com.example.pagekeeper.core.database.pages.library.PageDao
-import com.example.pagekeeper.pages.data.navigation.toChapter
+import com.example.pagekeeper.pages.data.bookmarks.toBookmark
+import com.example.pagekeeper.pages.data.bookmarks.toBookmarkEntity
 import com.example.pagekeeper.pages.data.navigation.toChapterEntity
 import com.example.pagekeeper.pages.data.navigation.toContent
 import com.example.pagekeeper.pages.data.navigation.toContentEntity
 import com.example.pagekeeper.pages.data.reader.toElement
 import com.example.pagekeeper.pages.data.reader.toElementEntity
+import com.example.pagekeeper.pages.domain.bookmarks.Bookmark
 import com.example.pagekeeper.pages.domain.library.Book
 import com.example.pagekeeper.pages.domain.library.PageDataSource
-import com.example.pagekeeper.pages.domain.navigation.Chapter
 import com.example.pagekeeper.pages.domain.navigation.Content
 import com.example.pagekeeper.pages.domain.reader.Element
 import kotlinx.coroutines.flow.Flow
@@ -47,9 +48,9 @@ class RoomPageDataSource(
             }
     }
 
-    override fun observeBookById(bookId: Long): Flow<Book?> {
+    override fun observeBookById(id: Long): Flow<Book?> {
         return pageDao
-            .observeBookById(bookId)
+            .observeBookById(id)
             .map { it?.toBook() }
     }
 
@@ -91,9 +92,9 @@ class RoomPageDataSource(
             }
     }
 
-    override fun observerChaptersByBookIdAndSectionId(id: Long): Flow<List<Element>> {
+    override fun observerChaptersWithSectionByBookId(id: Long): Flow<List<Element>> {
         return pageDao
-            .observerChaptersByBookIdAndSectionId(id)
+            .observerChaptersWithSectionByBookId(id)
             .map {
                 it.map { element ->
                     element.toElement()
@@ -101,10 +102,10 @@ class RoomPageDataSource(
             }
     }
 
-    override fun getIndexOfElementByBookId(
+    override fun getPositionInBook(
         bookId: Long,
         elementId: Long
-    ): Flow<Int> = pageDao.getIndexOfElementByBookId(bookId, elementId)
+    ): Flow<Int> = pageDao.getPositionInBook(bookId, elementId)
 
     override fun observeContentsByBookId(bookId: Long): Flow<List<Content>> {
         return pageDao
@@ -114,6 +115,30 @@ class RoomPageDataSource(
                     content.toContent()
                 }
             }
+    }
+
+    override fun observeBookmarksByBookId(bookId: Long): Flow<List<Bookmark>> {
+        return pageDao
+            .observeBookmarksByBookId(bookId)
+            .map { bookmarks ->
+                bookmarks.map { bookmark ->
+                    bookmark.toBookmark()
+                }
+            }
+    }
+
+    override fun observeBookmarkById(id: Int): Flow<Bookmark?> {
+        return pageDao
+            .observeBookmarkById(id)
+            .map {
+                it?.toBookmark()
+            }
+    }
+
+    override fun observeElementByBookIdAndPosition(bookId: Long, position: Int): Flow<Element?> {
+        return pageDao
+            .observeElementByBookIdAndPosition(bookId, position)
+            .map { it?.toElement() }
     }
 
     override suspend fun removeSelected() {
@@ -145,4 +170,26 @@ class RoomPageDataSource(
         )
     }
 
+    override suspend fun deleteContentsWithChapters(contents: List<Content>) {
+        contents.forEach { content ->
+            pageDao.deleteContentWithChapters(
+                content = content.toContentEntity(),
+                chapters = content.chapters.map { it.toChapterEntity() }
+            )
+        }
+    }
+
+    override suspend fun upsertBookmark(bookmark: Bookmark) {
+        pageDao.upsertBookmark(bookmark.toBookmarkEntity())
+    }
+
+    override suspend fun deleteBookmark(bookmark: Bookmark) {
+        pageDao.deleteBookmark(bookmark.toBookmarkEntity())
+    }
+
+    override suspend fun deleteBookmarks(bookmarks: List<Bookmark>) {
+        pageDao.deleteBookmarks(
+            bookmarks.map { it.toBookmarkEntity() }
+        )
+    }
 }

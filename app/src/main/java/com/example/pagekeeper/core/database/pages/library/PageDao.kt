@@ -5,10 +5,12 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Upsert
 import com.example.pagekeeper.core.database.book_element_relation.BookWithElementCount
 import com.example.pagekeeper.core.database.content_chapter_relation.ContentWithChapters
+import com.example.pagekeeper.core.database.pages.bookmarks.BookmarkEntity
 import com.example.pagekeeper.core.database.pages.navigation.ChapterEntity
 import com.example.pagekeeper.core.database.pages.navigation.ContentEntity
 import com.example.pagekeeper.core.database.pages.reader.ElementEntity
@@ -32,12 +34,8 @@ interface PageDao {
     @Query("SELECT * FROM bookentity WHERE bookId=:id")
     fun observeBookById(id: Long): Flow<BookEntity?>
 
-
     @Query("SELECT * FROM elemententity WHERE bookId=:id ORDER BY elementId")
     fun observeElementsByBookId(id: Long): PagingSource<Int, ElementEntity>
-
-    @Query("SELECT * FROM elemententity WHERE bookId=:id ORDER BY elementId")
-    fun observeElementsByBookIdTest(id: Long): Flow<List<ElementEntity>>
 
     @Query("SELECT * FROM bookentity WHERE bookId IN (:ids)")
     fun observeBooksByIds(ids: List<Long>): Flow<List<BookEntity>>
@@ -83,18 +81,34 @@ interface PageDao {
     WHERE bookid = :bookId
 ) WHERE row_num = 1    
     """)
-    fun observerChaptersByBookIdAndSectionId(bookId: Long): Flow<List<ElementEntity>>
+    fun observerChaptersWithSectionByBookId(bookId: Long): Flow<List<ElementEntity>>
 
+    @RewriteQueriesToDropUnusedColumns
     @Query("""
         SELECT COUNT(*)
         FROM elemententity 
         WHERE bookId = :bookId AND elementId <= :elementId
     """)
-    fun getIndexOfElementByBookId(bookId: Long, elementId: Long): Flow<Int>
+    fun getPositionInBook(bookId: Long, elementId: Long): Flow<Int>
 
     @Transaction
     @Query("SELECT * FROM contententity WHERE bookId = :bookId ORDER BY id")
     fun observeContentsByBookId(bookId: Long): Flow<List<ContentWithChapters>>
+
+    @Query("SELECT * FROM bookmarkentity WHERE bookId = :bookId ORDER BY creationTime DESC")
+    fun observeBookmarksByBookId(bookId: Long): Flow<List<BookmarkEntity>>
+
+    @Query("SELECT * FROM bookmarkentity WHERE id = :id")
+    fun observeBookmarkById(id: Int): Flow<BookmarkEntity?>
+
+    @Query("""
+        SELECT * 
+        FROM elemententity 
+        WHERE bookId = :id
+        ORDER by elementId
+        LIMIT 1 OFFSET :position - 1
+    """)
+    fun observeElementByBookIdAndPosition(id: Long, position: Int): Flow<ElementEntity?>
 
     @Query("UPDATE bookentity SET isSelected=0")
     suspend fun removeSelected()
@@ -122,4 +136,25 @@ interface PageDao {
         val contentId = insertContent(content)
         insertChapter(chapters.map { it.copy(contentId = contentId.toInt()) })
     }
+
+    @Delete
+    suspend fun deleteContent(content: ContentEntity)
+
+    @Delete
+    suspend fun deleteChapters(chapters: List<ChapterEntity>)
+
+    @Transaction
+    suspend fun deleteContentWithChapters(content: ContentEntity, chapters: List<ChapterEntity>) {
+        deleteContent(content)
+        deleteChapters(chapters)
+    }
+
+    @Upsert
+    suspend fun upsertBookmark(bookmark: BookmarkEntity)
+
+    @Delete
+    suspend fun deleteBookmark(bookmark: BookmarkEntity)
+
+    @Delete
+    suspend fun deleteBookmarks(bookmarks: List<BookmarkEntity>)
 }

@@ -90,16 +90,16 @@ class LibraryViewModel(
             }
             .launchIn(viewModelScope)
 
-            pagePreferences
-                .observeRecentlyOpenedBooks()
-                .onEach { recentlyOpenedBooks ->
-                    _state.update {
-                        it.copy(
-                            recentlyOpenedBooks = recentlyOpenedBooks
-                        )
-                    }
+        pagePreferences
+            .observeRecentlyOpenedBooks()
+            .onEach { recentlyOpenedBooks ->
+                _state.update {
+                    it.copy(
+                        recentlyOpenedBooks = recentlyOpenedBooks
+                    )
                 }
-                .launchIn(viewModelScope)
+            }
+            .launchIn(viewModelScope)
 
         snapshotFlow { searchFieldState.text }
             .distinctUntilChanged()
@@ -272,6 +272,18 @@ class LibraryViewModel(
                                     xmlParser.deleteBook(it) ?: Timber.e("Unable delete file: $it")
                                 }
                             pageDataSource.deleteElementsByBookId(book.bookId!!)
+                            pageDataSource
+                                .observeContentsByBookId(book.bookId)
+                                .firstOrNull()
+                                ?.let {
+                                    pageDataSource.deleteContentsWithChapters(it)
+                                }
+                            pageDataSource
+                                .observeBookmarksByBookId(book.bookId)
+                                .firstOrNull()
+                                ?.let { bookmarks ->
+                                    pageDataSource.deleteBookmarks(bookmarks)
+                                }
                         }
                         val booksId = books.mapNotNull { it.bookId }
                         pagePreferences.saveRecentlyOpenedBooks(

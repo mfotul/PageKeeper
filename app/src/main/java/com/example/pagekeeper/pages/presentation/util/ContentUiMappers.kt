@@ -2,7 +2,7 @@ package com.example.pagekeeper.pages.presentation.util
 
 import com.example.pagekeeper.pages.domain.navigation.Chapter
 import com.example.pagekeeper.pages.domain.navigation.Content
-import com.example.pagekeeper.pages.presentation.navigation.models.ChapterUi
+import com.example.pagekeeper.pages.presentation.models.ChapterUi
 import com.example.pagekeeper.pages.presentation.navigation.models.ContentUi
 
 fun Content.toContentUi(): ContentUi {

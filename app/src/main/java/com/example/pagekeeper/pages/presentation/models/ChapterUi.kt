@@ -1,4 +1,4 @@
-package com.example.pagekeeper.pages.presentation.navigation.models
+package com.example.pagekeeper.pages.presentation.models
 
 data class ChapterUi(
     val elementId: Long,

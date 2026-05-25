@@ -15,7 +15,6 @@ val StateFinished = Color(0xFF14AF62)
 val StateAlert = Color(0xFFDC362E)
 val TabletBlockBackground = Color(0xFFF1EBDF)
 val BgBottomNav = Color(0xFFF4F1E6)
-val LoaderMain = Color(0xFF8C7851)
 val LoaderSecondary = Color(0xFFE8E4D8)
 val BgModalInput = Color(0xFFF6F6F6)
 val ModalOutline = Color(0xFFEAEAEA)
@@ -27,9 +26,6 @@ val BookmarkPurple = Color(0xFFC90FBA)
 
 val ColorScheme.icons: Color
     get() = Icons
-
-val ColorScheme.stateFinished: Color
-    get() = StateFinished
 
 val ColorScheme.tabletBlockBackground: Color
     get() = TabletBlockBackground
@@ -46,17 +42,3 @@ val ColorScheme.loaderSecondary: Color
 val ColorScheme.modalOutline: Color
     get() = ModalOutline
 
-val ColorScheme.bookmarkBlue: Color
-    get() = BookmarkBlue
-
-val ColorScheme.bookmarkGreen: Color
-    get() = BookmarkGreen
-
-val ColorScheme.bookmarkYellow: Color
-    get() = BookmarkYellow
-
-val ColorScheme.bookmarkRed: Color
-    get() = BookmarkRed
-
-val ColorScheme.bookmarkPurple: Color
-    get() = BookmarkPurple

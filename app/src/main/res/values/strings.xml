@@ -55,4 +55,6 @@
     <string name="yellow">Yellow color</string>
     <string name="red">Red color</string>
     <string name="purple">Purple color</string>
+    <string name="more_options">More options</string>
+    <string name="edit">Edit</string>
 </resources>

@@ -79,10 +79,8 @@ fun NavigationChapter(
             visible = isExpanded
         ) {
             Column(
-//                verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-//                    .padding(top = 16.dp)
             ) {
                 contentUi.chapters.forEachIndexed { index, chapter ->
                     Column(

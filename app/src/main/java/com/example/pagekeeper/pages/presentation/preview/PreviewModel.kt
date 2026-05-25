@@ -3,11 +3,14 @@ package com.example.pagekeeper.pages.presentation.preview
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
+import com.example.pagekeeper.pages.presentation.bookmarks.models.BookmarkUi
+import com.example.pagekeeper.pages.presentation.bookmarks.models.ColorItem
 import com.example.pagekeeper.pages.presentation.models.BookUi
-import com.example.pagekeeper.pages.presentation.reader.models.ElementUi
+import com.example.pagekeeper.pages.presentation.models.ChapterUi
 import com.example.pagekeeper.pages.presentation.models.Fb2BlockElementUi
-import com.example.pagekeeper.pages.presentation.navigation.models.ChapterUi
 import com.example.pagekeeper.pages.presentation.navigation.models.ContentUi
+import com.example.pagekeeper.pages.presentation.reader.models.ElementUi
+import java.time.Instant
 
 data object PreviewModel {
     val books = listOf(
@@ -132,5 +135,24 @@ data object PreviewModel {
                 )
             )
         )
+    )
+
+    val bookmark = listOf(
+        BookmarkUi(
+            id = 1,
+            bookId = 1,
+            colorItem = ColorItem.BLUE,
+            text = "Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, 'and what is the use of a book,' thought Alice 'without pictures or conversations?'",
+            chapter = "Chapter 1 Alice was beginning to get very tired",
+            creationTime = Instant.now()
+        ),
+        BookmarkUi(
+            id = 2,
+            bookId = 1,
+            colorItem = ColorItem.PURPLE,
+            text = "Alice was beginning to get very tired",
+            chapter = "Chapter 1",
+            creationTime = Instant.now()
+        ),
     )
 }

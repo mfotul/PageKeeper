@@ -38,7 +38,7 @@ import com.example.pagekeeper.pages.presentation.bookmarks.models.ColorItem
 import com.example.pagekeeper.pages.presentation.util.thenIf
 
 @Composable
-fun BookmarkDropDownMenu(
+fun BookmarkColorDropDownMenu(
     expanded: Boolean,
     items: List<ColorItem>,
     selectedItem: ColorItem,
@@ -60,7 +60,7 @@ fun BookmarkDropDownMenu(
                 enter = expandIn(expandFrom = Alignment.TopCenter) + fadeIn(),
                 exit = shrinkOut(shrinkTowards = Alignment.TopCenter) + fadeOut()
             ) {
-                BookmarkDropDownMenuContent(
+                BookmarkColorDropDownMenuContent(
                     items = items,
                     selectedItem = selectedItem,
                     onSelectedItem = onSelectedItem,
@@ -71,7 +71,7 @@ fun BookmarkDropDownMenu(
 }
 
 @Composable
-fun BookmarkDropDownMenuContent(
+fun BookmarkColorDropDownMenuContent(
     items: List<ColorItem>,
     selectedItem: ColorItem,
     onSelectedItem: (ColorItem) -> Unit,
@@ -132,10 +132,10 @@ fun BookmarkDropDownMenuContent(
 
 @Preview
 @Composable
-fun BookmarkDropDownMenuPreview() {
+fun BookmarkColorDropDownMenuPreview() {
     PageKeeperTheme {
         val items = ColorItem.entries.map { it }
-        BookmarkDropDownMenuContent(
+        BookmarkColorDropDownMenuContent(
             items = items,
             selectedItem = items.first(),
             onSelectedItem = {},

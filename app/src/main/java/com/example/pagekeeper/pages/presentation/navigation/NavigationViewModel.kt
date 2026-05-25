@@ -4,16 +4,9 @@ package com.example.pagekeeper.pages.presentation.navigation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.pagekeeper.pages.data.navigation.toChapter
-import com.example.pagekeeper.pages.data.navigation.toContents
-import com.example.pagekeeper.pages.domain.library.Book
 import com.example.pagekeeper.pages.domain.library.PageDataSource
-import com.example.pagekeeper.pages.domain.navigation.Content
-import com.example.pagekeeper.pages.domain.reader.Element
-import com.example.pagekeeper.pages.domain.reader.Fb2BlockElement
-import com.example.pagekeeper.pages.domain.reader.StyledText
-import com.example.pagekeeper.pages.presentation.navigation.models.ChapterUi
 import com.example.pagekeeper.pages.presentation.navigation.models.ContentUi
+import com.example.pagekeeper.pages.presentation.util.findChapterJustLower
 import com.example.pagekeeper.pages.presentation.util.toContentUi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -34,7 +27,6 @@ class NavigationViewModel(
     private val pageDataSource: PageDataSource
 ) : ViewModel() {
     private var hasLoadedInitialData = false
-    private var backupSource = false
 
     private val _state = MutableStateFlow(NavigationState())
     val state = _state
@@ -58,11 +50,6 @@ class NavigationViewModel(
             .observeContentsByBookId(bookId)
             .onEach { contents ->
                 if (elementId == null) return@onEach
-
-                if (contents.isEmpty()) {
-                    generateContents()
-                    return@onEach
-                }
 
                 val (expandedContentId, contentWithTargetChapter) = contentWithSelectedChapter(
                     contents = contents.map { it.toContentUi() },
@@ -98,90 +85,12 @@ class NavigationViewModel(
     private fun onChapterClick(elementId: Long) {
         viewModelScope.launch {
             pageDataSource
-                .getIndexOfElementByBookId(bookId = bookId, elementId = elementId)
+                .getPositionInBook(bookId = bookId, elementId = elementId)
                 .firstOrNull()
                 ?.let { index ->
                     eventChannel.send(NavigationEvent.OnChapterSelected(index - 1))
                 }
         }
-    }
-
-    private fun generateContents() {
-        viewModelScope.launch {
-            pageDataSource
-                .observeBookById(bookId)
-                .firstOrNull()
-                ?.let { book ->
-                    val elements = pageDataSource
-                        .observerChaptersByBookId(bookId)
-                        .firstOrNull()
-                        ?.let {
-                            it.ifEmpty {
-                                pageDataSource.observerChaptersByBookIdAndSectionId(bookId)
-                                    .firstOrNull()
-                            }
-                        } ?: emptyList()
-
-                    val contents = elementsToContents(elements, book)
-
-                    contents.forEach {
-                        pageDataSource.insertContentWithChapters(it)
-                    }
-                }
-        }
-    }
-
-    private fun elementsToContents(
-        elements: List<Element>,
-        book: Book
-    ): List<Content> {
-        return elements
-            .filter { element ->
-                val content = element.content
-                if (content is Fb2BlockElement.Paragraph) {
-                    content.text.firstOrNull()?.text?.startsWith(
-                        "chapter",
-                        ignoreCase = true
-                    ) == true || backupSource
-                } else {
-                    true
-                }
-            }
-            .let { elements ->
-                if (backupSource)
-                    elements.mapIndexed { index, element ->
-                        element.copy(
-                            content = Fb2BlockElement.Title(
-                                lines = listOf(listOf(StyledText(text = "Chapter ${index + 1}")))
-                            )
-                        )
-                    }
-                else
-                    elements
-            }
-            .groupBy { it.bodyId }
-            .mapValues { (_, elements) ->
-                elements
-                    .groupBy { it.sectionId }
-                    .filterValues { it.size == 1 }
-                    .mapValues { (_, sectionElements) ->
-                        sectionElements.map { element ->
-                            element.toChapter()
-                        }
-                    }
-            }.toContents(book)
-    }
-
-    private fun findChapterJustLower(chapters: List<ChapterUi>, targetId: Long): ChapterUi? {
-        val index = chapters.binarySearchBy(targetId) { it.elementId }
-
-        val lowerIndex = if (index >= 0) {
-            index - 1
-        } else {
-            val insertionPoint = -(index + 1)
-            insertionPoint - 1
-        }
-        return chapters.getOrNull(lowerIndex)
     }
 
     private fun contentWithSelectedChapter(
@@ -191,7 +100,7 @@ class NavigationViewModel(
         val chapters = contents.flatMap { content -> content.chapters }
         val targetChapter = findChapterJustLower(chapters, targetId)
 
-        var expandedContentId = contents[0].id
+        var expandedContentId = contents.getOrNull(0)?.id ?: -1
         val contentWithTargetChapter = contents.map { content ->
             val chapters = content.chapters.map { chapter ->
                 if (chapter.elementId == targetChapter?.elementId) {
