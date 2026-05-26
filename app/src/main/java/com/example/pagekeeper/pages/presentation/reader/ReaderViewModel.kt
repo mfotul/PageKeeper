@@ -15,6 +15,7 @@ import com.example.pagekeeper.pages.data.reader.toElement
 import com.example.pagekeeper.pages.domain.library.PageDataSource
 import com.example.pagekeeper.pages.domain.library.PagePreferences
 import com.example.pagekeeper.pages.domain.library.XmlParser
+import com.example.pagekeeper.pages.presentation.models.ColorItem
 import com.example.pagekeeper.pages.presentation.reader.models.ElementUi
 import com.example.pagekeeper.pages.presentation.util.toElementUi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -88,8 +89,9 @@ class ReaderViewModel(
     private fun observerBook() {
         combine(
             pageDataSource.getBookTitleWithCount(bookId),
-            readerPreferences.observerFontSize()
-        ) { book, fontSize ->
+            readerPreferences.observerFontSize(),
+            pageDataSource.observeBookmarksByBookId(bookId)
+        ) { book, fontSize, bookmarks ->
             if (book == null) return@combine
             _state.update { state ->
                 val newState = state ?: ReaderState(
@@ -106,7 +108,10 @@ class ReaderViewModel(
                     fontSize = fontSize,
                     readingPositionIndex = book.readingPositionIndex,
                     readingPositionOffset = book.readingPositionOffset,
-                    elementCount = book.elementCount
+                    elementCount = book.elementCount ?: 0,
+                    bookmarks = bookmarks.associate {
+                        it.readingPositionIndex to ColorItem.valueOf(it.colorItem)
+                    }
                 )
             }
 
@@ -173,7 +178,7 @@ class ReaderViewModel(
         readingPositionOffset: Int,
         readingProgress: Float,
         event: ReaderEvent
-    ){
+    ) {
         viewModelScope.launch {
             pageDataSource
                 .observeBookById(bookId)

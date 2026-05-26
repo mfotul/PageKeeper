@@ -82,6 +82,16 @@ class RoomPageDataSource(
             }
     }
 
+    override fun observeBooksWithBookmarksCount(): Flow<List<Book>> {
+        return pageDao
+            .observeBooksWithBookmarksCount()
+            .map { books ->
+                books.map {
+                    it.toBook()
+                }
+            }
+    }
+
     override fun observerChaptersByBookId(id: Long): Flow<List<Element>> {
         return pageDao
             .observerChaptersByBookId(id)

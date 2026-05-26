@@ -136,8 +136,8 @@ private fun LibraryNavigationDrawerPreview() {
     PageKeeperTheme {
         LibraryNavigationDrawer(
             drawerState = rememberDrawerState(DrawerValue.Open),
-            selectedScreen = Screen.LIBRARY,
-            isEnabled = false,
+            selectedScreen = Screen.BOOKMARKS,
+            isEnabled = true,
             onAction = {}
         ) {
             Box(

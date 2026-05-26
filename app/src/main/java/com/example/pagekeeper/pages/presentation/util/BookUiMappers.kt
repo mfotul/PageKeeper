@@ -12,6 +12,7 @@ fun Book.toBookUi(): BookUi {
         isSelected = isSelected,
         isFavorite = isFavorite,
         isFinished = isFinished,
-        readingProgress = readingProgress
+        readingProgress = readingProgress,
+        bookmarksCount = bookmarkCount
     )
 }

@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 
 package com.example.pagekeeper.pages.presentation.reader
 
@@ -14,6 +14,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -22,13 +23,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -36,11 +37,14 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Devices.PHONE
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,6 +58,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import androidx.window.core.layout.WindowSizeClass
+import com.example.pagekeeper.R
 import com.example.pagekeeper.app.navigation.ResultStore
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 import com.example.pagekeeper.core.presentation.util.ObserveAsEvents
@@ -65,6 +70,7 @@ import com.example.pagekeeper.pages.presentation.reader.components.ReaderLinearP
 import com.example.pagekeeper.pages.presentation.reader.components.ReaderTopAppBar
 import com.example.pagekeeper.pages.presentation.reader.models.ElementUi
 import com.example.pagekeeper.pages.presentation.util.thenIf
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOf
 import org.koin.androidx.compose.koinViewModel
@@ -135,6 +141,7 @@ fun ReaderScreen(
                 && windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
     val navState = rememberNavigationEventState(NavigationEventInfo.None)
     var progress by remember { mutableFloatStateOf(0f) }
+    var bookmarkColor by remember { mutableStateOf<Color?>(null) }
 
     NavigationBackHandler(
         state = navState
@@ -151,92 +158,121 @@ fun ReaderScreen(
     LaunchedEffect(listState, state.elementCount) {
         snapshotFlow { listState.firstVisibleItemIndex }
             .collectLatest { firstVisibleItemIndex ->
+                bookmarkColor = state.bookmarks[firstVisibleItemIndex]?.color
                 progress =
                     if (!listState.canScrollForward) 1f else firstVisibleItemIndex / state.elementCount.toFloat()
             }
     }
 
     LaunchedEffect(resultStore) {
-        val chapterIndex = resultStore.getResult<Int>("chapterIndex")
-        if (chapterIndex != null) {
-            onAction(ReaderAction.OnChapterSelected(chapterIndex))
-            listState.animateScrollToItem(chapterIndex)
-            resultStore.removeResult("chapterIndex")
+        val positionIndex = resultStore.getResult<Int>("positionIndex")
+        val positionOffset = resultStore.getResult<Int>("positionOffset")
+        if (positionIndex != null) {
+            onAction(ReaderAction.OnChapterSelected(positionIndex))
+            if (positionOffset != null) {
+                listState.animateScrollToItem(positionIndex, positionOffset)
+                resultStore.removeResult("positionOffset")
+            } else
+                listState.animateScrollToItem(positionIndex)
+            resultStore.removeResult("positionIndex")
         }
     }
 
     Scaffold(
-        topBar = {
-            ReaderTopAppBar(
-                bookName = state.bookName,
-                isVisible = state.areBarsVisible,
-                isFavorite = state.isFavorite,
-                onBackClick = {
-                    onAction(
-                        ReaderAction.OnBackClick(
-                            readingPositionIndex = listState.firstVisibleItemIndex,
-                            readingPositionOffset = listState.firstVisibleItemScrollOffset,
-                            readingProgress = progress
-                        )
-                    )
-                },
-                onFavoriteClick = { onAction(ReaderAction.OnFavoritesClick) }
-            )
-        },
-        contentWindowInsets = WindowInsets.statusBars,
+        contentWindowInsets = WindowInsets(),
         modifier = modifier
     ) { innerPadding ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .padding(innerPadding)
                 .fillMaxSize()
+                .padding(innerPadding)
                 .thenIf(!state.areBarsVisible) {
                     systemBarsPadding()
                 }
         ) {
-            LazyColumn(
-                state = listState,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding = PaddingValues(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() },
-                        onClick = { onAction(ReaderAction.OnScreenClick) },
-                    )
+            AnimatedVisibility(
+                visible = state.areBarsVisible,
+                enter = slideInVertically(
+                    animationSpec = tween(
+                        durationMillis = 200,
+                        easing = LinearOutSlowInEasing
+                    ),
+                    initialOffsetY = { -it }
+                ),
+                exit = slideOutVertically(
+                    animationSpec = snap(),
+                    targetOffsetY = { -it }
+                )
             ) {
-                items(
-                    count = lazyPagingItems.itemCount,
-                    key = lazyPagingItems.itemKey {
-                        it.elementId
-                    }) { index ->
-                    val element = lazyPagingItems[index]
-                    Column(
-                        modifier = Modifier
-                            .then(
-                                if (isTablet)
-                                    Modifier.widthIn(max = 600.dp)
-                                else
+                ReaderTopAppBar(
+                    bookName = state.bookName,
+                    isFavorite = state.isFavorite,
+                    onBackClick = {
+                        onAction(
+                            ReaderAction.OnBackClick(
+                                readingPositionIndex = listState.firstVisibleItemIndex,
+                                readingPositionOffset = listState.firstVisibleItemScrollOffset,
+                                readingProgress = progress
+                            )
+                        )
+                    },
+                    onFavoriteClick = { onAction(ReaderAction.OnFavoritesClick) }
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                LazyColumn(
+                    state = listState,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    contentPadding = PaddingValues(16.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = { onAction(ReaderAction.OnScreenClick) },
+                        )
+                ) {
+                    items(
+                        count = lazyPagingItems.itemCount,
+                        key = lazyPagingItems.itemKey {
+                            it.elementId
+                        }) { index ->
+                        val element = lazyPagingItems[index]
+                        Column(
+                            modifier = Modifier
+                                .thenIf(isTablet) {
+                                    widthIn(max = 600.dp)
+                                }
+                        ) {
+                            if (element != null)
+                                ReaderBookItem(element.content)
+                            else
+                                Spacer(
                                     Modifier
-                            )
-                    ) {
-                        if (element != null)
-                            ReaderBookItem(element.content)
-                        else
-                            Spacer(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(60.dp)
-                            )
+                                        .fillMaxWidth()
+                                        .height(60.dp)
+                                )
+                        }
+                    }
+
+                    item {
+                        if (lazyPagingItems.loadState.append == LoadState.Loading)
+                            CircularProgressIndicator()
                     }
                 }
-
-                item {
-                    if (lazyPagingItems.loadState.append == LoadState.Loading)
-                        CircularProgressIndicator()
+                bookmarkColor?.let { color ->
+                    Icon(
+                        painter = painterResource(R.drawable.bookmark_color),
+                        contentDescription = null,
+                        tint = color,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                    )
                 }
             }
             AnimatedVisibility(
@@ -301,11 +337,15 @@ fun ReaderScreen(
                                 null
                             onAction(ReaderAction.OnChapterClick(elementUi))
                         },
-                        onBookmarksClick = { onAction(ReaderAction.OnBookmarksClick(
-                            readingPositionIndex = listState.firstVisibleItemIndex,
-                            readingPositionOffset = listState.firstVisibleItemScrollOffset,
-                            readingProgress = progress
-                        )) }
+                        onBookmarksClick = {
+                            onAction(
+                                ReaderAction.OnBookmarksClick(
+                                    readingPositionIndex = listState.firstVisibleItemIndex,
+                                    readingPositionOffset = listState.firstVisibleItemScrollOffset,
+                                    readingProgress = progress
+                                )
+                            )
+                        }
                     )
             }
 

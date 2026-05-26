@@ -62,6 +62,7 @@ import java.io.File
 @Composable
 fun LibraryScreenRoot(
     onBookSelected: (Long) -> Unit,
+    onBookmarksChosen: (Long) -> Unit,
     viewModel: LibraryViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -98,6 +99,7 @@ fun LibraryScreenRoot(
                 }
 
                 is LibraryEvent.OnBookSelected -> onBookSelected(event.bookId)
+                is LibraryEvent.OnBookBookmarksScreen -> onBookmarksChosen(event.bookId)
             }
         }
     }
@@ -157,7 +159,7 @@ fun LibraryScreen(
                     }
             },
             floatingActionButton = {
-                if (!isTablet && state.recentlyOpenedBooks.isNotEmpty())
+                if (!isTablet && state.recentlyOpenedBooks.isNotEmpty() && state.screen == Screen.LIBRARY)
                     LibraryFloatingActionButton(
                         onClick = {
                             onAction(LibraryAction.OnBookClick(state.recentlyOpenedBooks.first()))
@@ -198,13 +200,15 @@ fun LibraryScreen(
                                     .padding(16.dp)
                             )
 
-                        if (state.recentlyOpenedBooks.isNotEmpty()) {
+                        if (state.recentlyOpenedBooks.isNotEmpty() && state.screen == Screen.LIBRARY) {
                             val bookUi =
                                 state.books.firstOrNull { it.id == state.recentlyOpenedBooks.first() }
                             bookUi?.let { bookUi ->
                                 LibraryBookCard(
                                     bookUi = bookUi,
-                                    onClick = { onAction(LibraryAction.OnBookClick(bookUi.id)) },
+                                    onClick = {
+                                        onAction(LibraryAction.OnBookClick(bookUi.id))
+                                    },
                                     onLongClick = { onAction(LibraryAction.OnBookLongClick(bookUi.id)) },
                                     onFavoriteClick = {
                                         onAction(
@@ -256,15 +260,17 @@ fun LibraryScreen(
                         )
                     else if (state.books.isNotEmpty())
                         LibraryList(
-                            bookUis = if (isTablet)
+                            bookUis = if (isTablet && state.screen == Screen.LIBRARY)
                                 state.books.filterNot { it.id == state.recentlyOpenedBooks.firstOrNull() }
                             else
                                 state.books,
+                            screen = state.screen,
+                            dropDownMenuOpen = state.dropDownMenuOpen,
                             isTablet = isTablet,
                             isSelectable = state.screenType == ScreenType.SELECTED,
                             onAction = onAction,
                         )
-                     else
+                    else
                         when (state.screen) {
                             Screen.LIBRARY -> LibraryEmptyList(
                                 title = R.string.your_library_is_empty,
@@ -280,6 +286,11 @@ fun LibraryScreen(
                             Screen.FINISHED -> LibraryEmptyList(
                                 title = R.string.your_finished_is_empty,
                                 description = R.string.books_you_mark_as_finished_will_appears_here,
+                            )
+
+                            Screen.BOOKMARKS -> LibraryEmptyList(
+                                title = R.string.no_bookmarks_added,
+                                description = R.string.bookmarks_from_your_books_will_appears_here,
                             )
                         }
                 }
@@ -322,10 +333,22 @@ fun LibraryScreen(
 
                     DialogType.DUPLICATE_DOCUMENT ->
                         LibraryDialog(
-                            title = "This book is already in your library.",
+                            title = stringResource(R.string.this_book_is_already_in_your_library),
                             confirmButton = stringResource(R.string.ok),
                             onConfirmClick = { onAction(LibraryAction.OnDialogCloseClick) },
                             onDismiss = { onAction(LibraryAction.OnDialogCloseClick) }
+                        )
+
+                    DialogType.DELETE_BOOKMARKS ->
+                        LibraryDialog(
+                            title = "Delete all bookmarks?",
+                            description = "All bookmarks for this book will be permanently removed.",
+                            confirmButton = stringResource(R.string.delete),
+                            cancelButton = stringResource(R.string.cancel),
+                            onConfirmClick = { onAction(LibraryAction.OnDropDownMenuDeleteConfirmClick) },
+                            onCancelClick = { onAction(LibraryAction.OnDialogCloseClick) },
+                            onDismiss = { onAction(LibraryAction.OnDialogCloseClick) },
+                            isTextButtonRed = true
                         )
 
                     DialogType.NONE -> {}

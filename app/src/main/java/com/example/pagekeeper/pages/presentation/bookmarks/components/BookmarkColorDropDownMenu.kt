@@ -34,7 +34,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 import com.example.pagekeeper.core.presentation.designsystem.theme.bgModalInput
-import com.example.pagekeeper.pages.presentation.bookmarks.models.ColorItem
+import com.example.pagekeeper.pages.presentation.models.ColorItem
 import com.example.pagekeeper.pages.presentation.util.thenIf
 
 @Composable

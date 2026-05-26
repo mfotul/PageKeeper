@@ -1,5 +1,6 @@
 package com.example.pagekeeper.pages.presentation.bookmarks.models
 
+import com.example.pagekeeper.pages.presentation.models.ColorItem
 import com.example.pagekeeper.pages.presentation.util.toReadableTime
 import java.time.Instant
 

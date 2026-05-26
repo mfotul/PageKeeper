@@ -8,5 +8,6 @@ fun getStringForScreen(screen: Screen): Int {
         Screen.LIBRARY -> R.string.library_label
         Screen.FAVORITES -> R.string.favorites_label
         Screen.FINISHED -> R.string.finished_label
+        Screen.BOOKMARKS -> R.string.bookmarks_label
     }
 }

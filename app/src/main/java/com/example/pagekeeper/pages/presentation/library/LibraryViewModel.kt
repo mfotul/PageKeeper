@@ -75,6 +75,7 @@ class LibraryViewModel(
                     Screen.LIBRARY -> pageDataSource.observeLibrary()
                     Screen.FAVORITES -> pageDataSource.observeFavorites()
                     Screen.FINISHED -> pageDataSource.observeFinished()
+                    Screen.BOOKMARKS -> pageDataSource.observeBooksWithBookmarksCount()
                 }
             }
             .onEach { books ->
@@ -141,8 +142,14 @@ class LibraryViewModel(
             LibraryAction.OnBookDeleteConfirmClick -> onConfirmDelete()
             LibraryAction.OnBooksFavoriteClick -> onBooksFavoriteClick()
             LibraryAction.OnBooksShareClick -> onMultipleBookShare()
+            is LibraryAction.OnDropDownMenuClick -> _state.update { it.copy(dropDownMenuOpen = action.book) }
+            is LibraryAction.OnDropDownMenuDeleteBookmarksClick -> deleteBookmarksDialog(action.bookId)
+            LibraryAction.OnDropDownMenuDismiss -> _state.update { it.copy(dropDownMenuOpen = null) }
+            is LibraryAction.OnDropDownMenuViewBookmarkClick -> viewBookmarks(action.bookId)
+            LibraryAction.OnDropDownMenuDeleteConfirmClick -> deleteBookmarks()
         }
     }
+
 
     private fun onBookLongClick(bookId: Long) {
         viewModelScope.launch {
@@ -368,6 +375,43 @@ class LibraryViewModel(
                         )
                     pageDataSource.upsertBook(book.copy(isFinished = !book.isFinished))
                 }
+        }
+    }
+
+    private fun viewBookmarks(bookId: Long) {
+        viewModelScope.launch {
+            _state.update { it.copy(dropDownMenuOpen = null) }
+            eventChannel.send(LibraryEvent.OnBookBookmarksScreen(bookId))
+        }
+
+
+    }
+
+    private fun deleteBookmarksDialog(bookId: Long) {
+        _state.update {
+            it.copy(
+                bookmarksPendingDeletionByBookId = bookId,
+                dialogType = DialogType.DELETE_BOOKMARKS,
+                dropDownMenuOpen = null
+            )
+        }
+    }
+
+    private fun deleteBookmarks() {
+        viewModelScope.launch {
+            _state.update { state ->
+                pageDataSource
+                    .observeBookmarksByBookId(state.bookmarksPendingDeletionByBookId!!)
+                    .firstOrNull()
+                    ?.let {
+                        pageDataSource.deleteBookmarks(it)
+                    }
+
+                state.copy(
+                    dialogType = DialogType.NONE,
+                    bookmarksPendingDeletionByBookId = null
+                )
+            }
         }
     }
 }

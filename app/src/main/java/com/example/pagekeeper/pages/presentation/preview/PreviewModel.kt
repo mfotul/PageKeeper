@@ -4,7 +4,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import com.example.pagekeeper.pages.presentation.bookmarks.models.BookmarkUi
-import com.example.pagekeeper.pages.presentation.bookmarks.models.ColorItem
+import com.example.pagekeeper.pages.presentation.models.ColorItem
 import com.example.pagekeeper.pages.presentation.models.BookUi
 import com.example.pagekeeper.pages.presentation.models.ChapterUi
 import com.example.pagekeeper.pages.presentation.models.Fb2BlockElementUi
@@ -22,7 +22,8 @@ data object PreviewModel {
             isSelected = false,
             isFavorite = false,
             isFinished = false,
-            readingProgress = 0.4f
+            readingProgress = 0.4f,
+            bookmarksCount = 2
         ),
         BookUi(
             id = 2,
@@ -32,7 +33,8 @@ data object PreviewModel {
             isSelected = false,
             isFavorite = false,
             isFinished = false,
-            readingProgress = 0.8f
+            readingProgress = 0.8f,
+            bookmarksCount = 1
         ),
         BookUi(
             id = 3,
@@ -42,7 +44,8 @@ data object PreviewModel {
             isSelected = false,
             isFavorite = false,
             isFinished = false,
-            readingProgress = 0.5f
+            readingProgress = 0.5f,
+            bookmarksCount = 0
         ),
     )
 

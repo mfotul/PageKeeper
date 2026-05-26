@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Upsert
+import com.example.pagekeeper.core.database.book_element_relation.BookWithBookmarksCount
 import com.example.pagekeeper.core.database.book_element_relation.BookWithElementCount
 import com.example.pagekeeper.core.database.content_chapter_relation.ContentWithChapters
 import com.example.pagekeeper.core.database.pages.bookmarks.BookmarkEntity
@@ -59,6 +60,16 @@ interface PageDao {
         WHERE bookId = :id
     """)
     fun getBookTitleWithCount(id: Long): Flow<BookWithElementCount?>
+
+    @Query("""
+        SELECT b.*, COUNT(be.bookId) AS bookmarkCount
+        FROM bookentity b
+        JOIN bookmarkentity be ON b.bookId = be.bookId
+        GROUP BY b.bookId
+        HAVING COUNT(be.bookId) > 0
+        ORDER BY MAX(be.creationTime) DESC
+    """)
+    fun observeBooksWithBookmarksCount(): Flow<List<BookWithBookmarksCount>>
 
     @Query("""
         SELECT * 

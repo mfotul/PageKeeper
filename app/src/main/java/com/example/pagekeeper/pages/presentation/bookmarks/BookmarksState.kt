@@ -1,7 +1,7 @@
 package com.example.pagekeeper.pages.presentation.bookmarks
 
 import com.example.pagekeeper.pages.presentation.bookmarks.models.BookmarkUi
-import com.example.pagekeeper.pages.presentation.bookmarks.models.ColorItem
+import com.example.pagekeeper.pages.presentation.models.ColorItem
 import com.example.pagekeeper.pages.presentation.bookmarks.models.DialogType
 
 data class BookmarksState(

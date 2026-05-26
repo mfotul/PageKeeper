@@ -51,7 +51,7 @@ import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperThe
 import com.example.pagekeeper.core.presentation.designsystem.theme.bgModalInput
 import com.example.pagekeeper.core.presentation.designsystem.theme.buttonMedium
 import com.example.pagekeeper.core.presentation.designsystem.theme.modalOutline
-import com.example.pagekeeper.pages.presentation.bookmarks.models.ColorItem
+import com.example.pagekeeper.pages.presentation.models.ColorItem
 
 @Composable
 fun BookmarksAddDialog(

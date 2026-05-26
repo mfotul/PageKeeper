@@ -1,5 +1,7 @@
-package com.example.pagekeeper.pages.presentation.bookmarks.components
+package com.example.pagekeeper.pages.presentation.components
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,33 +27,37 @@ import com.example.pagekeeper.R
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 
 @Composable
-fun BookmarkActionDropDownMenu(
+fun EditViewDeleteDropDownMenu(
     expanded: Boolean,
-    onEditClick: () -> Unit,
+    @DrawableRes editViewIconRes: Int,
+    @StringRes editViewTextRes: Int,
+    onEditViewClick: () -> Unit,
+    @StringRes deleteTextRes: Int,
     onDeleteClick: () -> Unit,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    offset: DpOffset = DpOffset.Zero
 ) {
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.background,
         shape = RoundedCornerShape(16.dp),
-        offset = DpOffset(0.dp, 8.dp),
+        offset = offset,
         modifier = modifier
     ) {
         DropdownMenuItem(
             enabled = true,
-            onClick = onEditClick,
+            onClick = onEditViewClick,
             leadingIcon = {
                 Icon(
-                    painter = painterResource(R.drawable.edit),
-                    contentDescription = stringResource(R.string.edit),
+                    painter = painterResource(editViewIconRes),
+                    contentDescription = stringResource(editViewTextRes),
                 )
             },
             text = {
                 Text(
-                    text = stringResource(R.string.edit),
+                    text = stringResource(editViewTextRes),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
@@ -62,13 +68,13 @@ fun BookmarkActionDropDownMenu(
             leadingIcon = {
                 Icon(
                     painter = painterResource(R.drawable.rounded_delete_24),
-                    contentDescription = stringResource(R.string.delete),
+                    contentDescription = stringResource(deleteTextRes),
                     tint = MaterialTheme.colorScheme.onError
                 )
             },
             text = {
                 Text(
-                    text = stringResource(R.string.delete),
+                    text = stringResource(deleteTextRes),
                     color = MaterialTheme.colorScheme.onError
                 )
             }
@@ -78,9 +84,9 @@ fun BookmarkActionDropDownMenu(
 
 @Preview(showBackground = true, backgroundColor = 0xFFF)
 @Composable
-private fun BookmarkActionDropDownMenuPreview() {
+private fun EditViewDeleteDropDownMenuPreview() {
     PageKeeperTheme {
-        var expanded by remember { mutableStateOf(false) }
+        var expanded by remember { mutableStateOf(true) }
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -95,9 +101,12 @@ private fun BookmarkActionDropDownMenuPreview() {
                     contentDescription = null,
                 )
             }
-            BookmarkActionDropDownMenu(
+            EditViewDeleteDropDownMenu(
                 expanded = expanded,
-                onEditClick = {},
+                editViewIconRes = R.drawable.edit,
+                editViewTextRes = R.string.edit,
+                onEditViewClick = {},
+                deleteTextRes = R.string.delete,
                 onDeleteClick = {},
                 onDismiss = {}
             )

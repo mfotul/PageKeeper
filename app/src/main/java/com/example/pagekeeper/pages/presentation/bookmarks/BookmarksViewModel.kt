@@ -7,19 +7,21 @@ import androidx.lifecycle.viewModelScope
 import com.example.pagekeeper.pages.domain.bookmarks.Bookmark
 import com.example.pagekeeper.pages.domain.library.PageDataSource
 import com.example.pagekeeper.pages.presentation.bookmarks.models.BookmarkUi
-import com.example.pagekeeper.pages.presentation.bookmarks.models.ColorItem
+import com.example.pagekeeper.pages.presentation.models.ColorItem
 import com.example.pagekeeper.pages.presentation.bookmarks.models.DialogType
 import com.example.pagekeeper.pages.presentation.util.findChapterJustLower
 import com.example.pagekeeper.pages.presentation.util.toBookmarkUi
 import com.example.pagekeeper.pages.presentation.util.toChapterUi
 import com.example.pagekeeper.pages.presentation.util.toFb2BlockElementUi
 import com.example.pagekeeper.pages.presentation.util.toTitleString
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -44,6 +46,9 @@ class BookmarksViewModel(
             started = SharingStarted.WhileSubscribed(5000L),
             initialValue = BookmarksState()
         )
+
+    private val eventChannel = Channel<BookmarksEvent>()
+    val events = eventChannel.receiveAsFlow()
 
     val titleState = TextFieldState()
     private var titleForNewBookmark = ""
@@ -87,7 +92,7 @@ class BookmarksViewModel(
             BookmarksAction.OnDismissColorDropDownMenu -> colorDropDownMenu(false)
             BookmarksAction.OnColorDropDownClick -> colorDropDownMenu(!state.value.isColorDropDownMenuOpen)
             is BookmarksAction.OnActionDropDownClick -> actionDropDownMenu(action.bookmark)
-            is BookmarksAction.OnBookmarkClick -> {}
+            is BookmarksAction.OnBookmarkClick -> openBookmark(action.bookmarkId)
             is BookmarksAction.OnBookmarkDeleteClick -> deleteDialog(action.bookmarkId)
             is BookmarksAction.OnBookmarkEditClick -> editDialog(action.bookmarkId)
             BookmarksAction.OnDismissActionDropDownMenu -> _state.update {
@@ -97,6 +102,23 @@ class BookmarksViewModel(
             }
 
             BookmarksAction.OnBookmarkDeleteConfirmClick -> deleteBookmark()
+        }
+    }
+
+    private fun openBookmark(bookmarkId: Int) {
+        viewModelScope.launch {
+            pageDataSource
+                .observeBookmarkById(bookmarkId)
+                .firstOrNull()
+                ?.let { bookmark ->
+                    eventChannel.send(
+                        BookmarksEvent.OnBookmarkOpen(
+                            bookId = bookId,
+                            positionIndex = bookmark.readingPositionIndex,
+                            positionOffset = bookmark.readingPositionOffset
+                        )
+                    )
+                }
         }
     }
 

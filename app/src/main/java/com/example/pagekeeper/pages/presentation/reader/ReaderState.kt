@@ -1,5 +1,7 @@
 package com.example.pagekeeper.pages.presentation.reader
 
+import com.example.pagekeeper.pages.presentation.models.ColorItem
+
 data class ReaderState(
     val areBarsVisible: Boolean = false,
     val bookName: String,
@@ -11,4 +13,5 @@ data class ReaderState(
     val readingPositionIndex: Int,
     val readingPositionOffset: Int,
     val elementCount: Int,
+    val bookmarks: Map<Int, ColorItem> = emptyMap()
 )

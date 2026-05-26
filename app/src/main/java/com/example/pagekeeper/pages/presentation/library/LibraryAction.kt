@@ -2,6 +2,7 @@ package com.example.pagekeeper.pages.presentation.library
 
 import android.net.Uri
 import com.example.pagekeeper.pages.presentation.library.models.Screen
+import com.example.pagekeeper.pages.presentation.models.BookUi
 
 sealed interface LibraryAction {
     data object OnSearchIconClick: LibraryAction
@@ -22,4 +23,9 @@ sealed interface LibraryAction {
     data class OnBookDeleteOneClick(val bookId: Long): LibraryAction
     data object OnBooksDeleteClick: LibraryAction
     data object OnBookDeleteConfirmClick: LibraryAction
+    data object OnDropDownMenuDismiss: LibraryAction
+    data class OnDropDownMenuClick(val book: BookUi): LibraryAction
+    data class OnDropDownMenuViewBookmarkClick(val bookId: Long): LibraryAction
+    data class OnDropDownMenuDeleteBookmarksClick(val bookId: Long): LibraryAction
+    data object OnDropDownMenuDeleteConfirmClick: LibraryAction
 }

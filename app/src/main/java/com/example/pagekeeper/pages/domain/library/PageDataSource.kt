@@ -15,6 +15,7 @@ interface PageDataSource {
     fun observeDocumentsId(): Flow<List<String>>
     fun searchBooksByTitle(search: String): Flow<List<Book>>
     fun getBookTitleWithCount(id: Long): Flow<Book?>
+    fun observeBooksWithBookmarksCount(): Flow<List<Book>>
     fun observerChaptersByBookId(id: Long): Flow<List<Element>>
     fun observerChaptersWithSectionByBookId(id: Long): Flow<List<Element>>
     fun getPositionInBook(bookId: Long, elementId: Long): Flow<Int>

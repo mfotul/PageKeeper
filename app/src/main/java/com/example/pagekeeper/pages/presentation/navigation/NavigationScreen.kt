@@ -36,7 +36,7 @@ fun NavigationScreenRoot(
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             is NavigationEvent.OnChapterSelected -> {
-                resultStore.setResult("chapterIndex", event.index)
+                resultStore.setResult("positionIndex", event.index)
                 onBackClick()
             }
         }

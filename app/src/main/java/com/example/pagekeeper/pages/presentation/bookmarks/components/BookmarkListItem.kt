@@ -1,6 +1,5 @@
 package com.example.pagekeeper.pages.presentation.bookmarks.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,25 +7,25 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Devices.TABLET
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.example.pagekeeper.R
+import com.example.pagekeeper.core.presentation.designsystem.button.ThreeDotButton
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
-import com.example.pagekeeper.core.presentation.designsystem.theme.icons
 import com.example.pagekeeper.pages.presentation.bookmarks.models.BookmarkUi
+import com.example.pagekeeper.pages.presentation.components.EditViewDeleteDropDownMenu
 import com.example.pagekeeper.pages.presentation.preview.PreviewModel
-import com.example.pagekeeper.pages.presentation.util.thenIf
 
 @Composable
 fun BookmarkListItem(
@@ -88,31 +87,20 @@ fun BookmarkListItem(
         }
 
         Box {
-            IconButton(
+            ThreeDotButton(
                 onClick = onMenuClick,
-                modifier = Modifier
-                    .thenIf(isActionDropDownMenuOpen) {
-                        background(
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                    }
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.outline_more_vert_24),
-                    contentDescription = stringResource(R.string.more_options),
-                    tint = if (isActionDropDownMenuOpen)
-                        MaterialTheme.colorScheme.background
-                    else
-                        MaterialTheme.colorScheme.icons
-                )
-            }
+                isSelected = isActionDropDownMenuOpen
+            )
 
-            BookmarkActionDropDownMenu(
+            EditViewDeleteDropDownMenu(
                 expanded = isActionDropDownMenuOpen,
-                onEditClick = onEditClick,
+                editViewIconRes = R.drawable.edit,
+                editViewTextRes = R.string.edit,
+                onEditViewClick = onEditClick,
+                deleteTextRes = R.string.delete,
                 onDeleteClick = onDeleteClick,
-                onDismiss = onDismiss
+                onDismiss = onDismiss,
+                offset = DpOffset(0.dp, 8.dp)
             )
         }
     }
@@ -120,7 +108,7 @@ fun BookmarkListItem(
 
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFF)
+@Preview(showBackground = true, backgroundColor = 0xFFF, device = TABLET)
 @Composable
 private fun BookmarkListItemPreview() {
     PageKeeperTheme {

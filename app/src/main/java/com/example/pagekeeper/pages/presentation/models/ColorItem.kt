@@ -1,4 +1,4 @@
-package com.example.pagekeeper.pages.presentation.bookmarks.models
+package com.example.pagekeeper.pages.presentation.models
 
 import androidx.compose.ui.graphics.Color
 import com.example.pagekeeper.R

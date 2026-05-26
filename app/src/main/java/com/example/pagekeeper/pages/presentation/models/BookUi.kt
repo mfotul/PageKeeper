@@ -8,5 +8,6 @@ data class BookUi(
     val isSelected: Boolean,
     val isFavorite: Boolean,
     val isFinished: Boolean,
-    val readingProgress: Float
+    val readingProgress: Float,
+    val bookmarksCount: Int?,
 )

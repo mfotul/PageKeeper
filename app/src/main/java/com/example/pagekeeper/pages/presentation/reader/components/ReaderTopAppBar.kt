@@ -28,7 +28,6 @@ import com.example.pagekeeper.pages.presentation.util.thenIf
 @Composable
 fun ReaderTopAppBar(
     bookName: String,
-    isVisible: Boolean,
     isFavorite: Boolean,
     onBackClick: () -> Unit,
     onFavoriteClick: () -> Unit,
@@ -76,11 +75,6 @@ fun ReaderTopAppBar(
             titleContentColor = MaterialTheme.colorScheme.onPrimary
         ),
         modifier = modifier
-            .thenIf(!isVisible) {
-                height(0.dp)
-            }
-            .animateContentSize()
-
     )
 }
 
@@ -90,7 +84,6 @@ private fun ReaderTopAppBarPreview() {
     PageKeeperTheme {
         ReaderTopAppBar(
             bookName = "very very long long book name very, very long long book name",
-            isVisible = true,
             isFavorite = true,
             onBackClick = {},
             onFavoriteClick = {}

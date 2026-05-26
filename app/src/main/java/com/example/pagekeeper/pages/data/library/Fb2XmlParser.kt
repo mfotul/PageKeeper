@@ -128,14 +128,16 @@ class Fb2XmlParser(
                 if (!bookFile.exists()) return@withContext Result.Error(ParserError.IO_ERROR)
 
                 applicationScope.launch {
-                    bookFile.inputStream().buffered().use { bufferedStream ->
-                        val parser = Xml.newPullParser().apply {
-                            setInput(bufferedStream, null)
-                        }
-                        parser.next()
-                        parseBookBody(parser, book.bookId!!)
-                    }
-                    generateContents(bookId)
+                   withContext(Dispatchers.IO) {
+                       bookFile.inputStream().buffered(32 * 1024).use { bufferedStream ->
+                           val parser = Xml.newPullParser().apply {
+                               setInput(bufferedStream, "UTF-8")
+                           }
+                           parser.next()
+                           parseBookBody(parser, book.bookId!!)
+                       }
+                       generateContents(bookId)
+                   }
                 }
                 Result.Success(Unit)
             } catch (e: XmlPullParserException) {

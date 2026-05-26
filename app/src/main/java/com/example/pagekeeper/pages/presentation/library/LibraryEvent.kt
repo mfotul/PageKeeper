@@ -7,4 +7,5 @@ sealed interface LibraryEvent {
     data class OnShareBook(val path: String): LibraryEvent
     data class OnShareMultipleBooks(val paths: List<String>): LibraryEvent
     data class OnBookSelected(val bookId: Long): LibraryEvent
+    data class OnBookBookmarksScreen(val bookId: Long): LibraryEvent
 }

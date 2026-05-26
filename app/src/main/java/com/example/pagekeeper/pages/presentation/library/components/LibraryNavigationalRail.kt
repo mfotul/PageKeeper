@@ -187,7 +187,7 @@ private fun LibraryNavigationalRailPreview() {
                 .fillMaxSize()
         ) {
             LibraryNavigationalRail(
-                selectedScreen = Screen.LIBRARY,
+                selectedScreen = Screen.BOOKMARKS,
                 isEnabled = true,
                 recentlyOpenedBookCard = {
 

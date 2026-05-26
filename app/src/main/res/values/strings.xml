@@ -51,10 +51,14 @@
     <string name="add_bookmark">Add bookmark</string>
     <string name="save">Save</string>
     <string name="blue">Blue color</string>
-    <string name="green">Green oolor</string>
+    <string name="green">Green color</string>
     <string name="yellow">Yellow color</string>
     <string name="red">Red color</string>
     <string name="purple">Purple color</string>
     <string name="more_options">More options</string>
     <string name="edit">Edit</string>
+    <string name="bookmarks_from_your_books_will_appears_here">Bookmarks from your books will appear here</string>
+    <string name="view_bookmarks">View bookmarks</string>
+    <string name="delete_all_bookmarks">Delete all bookmarks</string>
+    <string name="this_book_is_already_in_your_library">This book is already in your library.</string>
 </resources>

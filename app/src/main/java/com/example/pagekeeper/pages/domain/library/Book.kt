@@ -15,6 +15,7 @@ data class Book(
     val readingPositionOffset: Int,
     val readingProgress: Float,
     val addedAt: Instant,
-    val elementCount: Int = 0,
+    val elementCount: Int? = null,
+    val bookmarkCount: Int? = null,
     val bookId: Long? = null,
 )

@@ -3,6 +3,7 @@ package com.example.pagekeeper.pages.presentation.library.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -28,16 +29,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Devices.TABLET
+import androidx.compose.ui.tooling.preview.Devices.PHONE
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.pagekeeper.R
 import com.example.pagekeeper.core.presentation.designsystem.button.PrimaryButton
+import com.example.pagekeeper.core.presentation.designsystem.button.ThreeDotButton
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 import com.example.pagekeeper.core.presentation.designsystem.theme.icons
 import com.example.pagekeeper.core.presentation.designsystem.theme.loaderSecondary
+import com.example.pagekeeper.pages.presentation.components.EditViewDeleteDropDownMenu
 import com.example.pagekeeper.pages.presentation.models.BookUi
 import com.example.pagekeeper.pages.presentation.preview.PreviewModel
 import com.example.pagekeeper.pages.presentation.util.thenIf
@@ -55,7 +58,12 @@ fun LibraryBookCard(
     isSelectable: Boolean = false,
     internalPadding: Dp = 0.dp,
     wasRecentlyOpened: Boolean = false,
-    onContinueReadingClick: () -> Unit = {}
+    onContinueReadingClick: () -> Unit = {},
+    isMenuOpened: Boolean = false,
+    onMenuClick: () -> Unit = {},
+    onViewBookmarkClick: () -> Unit = {},
+    onDeleteBookmarksClick: () -> Unit = {},
+    onMenuDismiss: () -> Unit = {},
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -97,11 +105,11 @@ fun LibraryBookCard(
                 .clip(RoundedCornerShape(4.dp))
                 .thenIf(wasRecentlyOpened) {
                     width(160.dp)
-                    .height(240.dp)
+                        .height(240.dp)
                 }
                 .thenIf(!wasRecentlyOpened) {
                     width(104.dp)
-                    .height(156.dp)
+                        .height(156.dp)
                 }
         )
         Column(
@@ -111,13 +119,15 @@ fun LibraryBookCard(
                 .fillMaxHeight(0.9f)
         ) {
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.Top,
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .weight(1f)
                 ) {
                     Text(
                         text = bookUi.bookTitle,
@@ -143,99 +153,155 @@ fun LibraryBookCard(
                         iconRes = R.drawable.continue_reading,
                         isCollapsed = false
                     )
-            }
-            Column {
-                LinearProgressIndicator(
-                    progress = {
-                        if (bookUi.isFinished)
-                            1f
-                        else
-                            bookUi.readingProgress
-                    },
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.loaderSecondary,
-                    strokeCap = StrokeCap.Round,
-                    gapSize = 4.dp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 8.dp)
-                        .thenIf(wasRecentlyOpened) {
-                            padding(bottom = 8.dp)
-                        }
-                )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        IconButton(
-                            onClick = onFavoriteClick,
-                        ) {
-                            Icon(
-                                painter = painterResource(
-                                    id = if (bookUi.isFavorite) R.drawable.menu_favorites_active else R.drawable.favorites
-                                ),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.icons,
-                                modifier = Modifier
-                                    .thenIf(wasRecentlyOpened) {
-                                        size(28.dp)
-                                    }
-                            )
-                        }
-                        IconButton(
-                            onClick = onFinishClick,
-                        ) {
-                            Icon(
-                                painter = painterResource(
-                                    id = if (bookUi.isFinished) R.drawable.finished else R.drawable.finish
-                                ),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.icons,
-                                modifier = Modifier
-                                    .thenIf(wasRecentlyOpened) {
-                                        size(28.dp)
-                                    }
-                            )
-                        }
-                        IconButton(
-                            onClick = onShareClick,
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.share),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.icons,
-                                modifier = Modifier
-                                    .thenIf(wasRecentlyOpened) {
-                                        size(28.dp)
-                                    }
-                            )
-                        }
-                    }
-                    IconButton(
-                        onClick = onDeleteClick,
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.rounded_delete_24),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.icons,
-                            modifier = Modifier
-                                .thenIf(wasRecentlyOpened) {
-                                    size(28.dp)
-                                }
+
+
+                if (bookUi.bookmarksCount != null && !wasRecentlyOpened)
+                    Box {
+                        ThreeDotButton(
+                            onClick = onMenuClick,
+                            isSelected = isMenuOpened,
+                        )
+                        EditViewDeleteDropDownMenu(
+                            expanded = isMenuOpened,
+                            editViewIconRes = R.drawable.show,
+                            editViewTextRes = R.string.view_bookmarks,
+                            onEditViewClick = onViewBookmarkClick,
+                            deleteTextRes = R.string.delete_all_bookmarks,
+                            onDeleteClick = onDeleteBookmarksClick,
+                            onDismiss = onMenuDismiss,
                         )
                     }
+
+            }
+            if (bookUi.bookmarksCount == null)
+                BookCardBottomColumn(
+                    bookUi = bookUi,
+                    onFavoriteClick = onFavoriteClick,
+                    onFinishClick = onFinishClick,
+                    onShareClick = onShareClick,
+                    onDeleteClick = onDeleteClick,
+                    wasRecentlyOpened = wasRecentlyOpened
+                )
+            else
+                Row {
+                    Icon(
+                        painter = painterResource(R.drawable.bookmark),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.icons,
+                    )
+                    Text(
+                        text = bookUi.bookmarksCount.toString(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    )
                 }
+
+        }
+    }
+}
+
+@Composable
+private fun BookCardBottomColumn(
+    bookUi: BookUi,
+    onFavoriteClick: () -> Unit,
+    onFinishClick: () -> Unit,
+    onShareClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    wasRecentlyOpened: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+    ) {
+        LinearProgressIndicator(
+            progress = {
+                if (bookUi.isFinished)
+                    1f
+                else
+                    bookUi.readingProgress
+            },
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.loaderSecondary,
+            strokeCap = StrokeCap.Round,
+            gapSize = 4.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 8.dp)
+                .thenIf(wasRecentlyOpened) {
+                    padding(bottom = 8.dp)
+                }
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(
+                    onClick = onFavoriteClick,
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            id = if (bookUi.isFavorite) R.drawable.menu_favorites_active else R.drawable.favorites
+                        ),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.icons,
+                        modifier = Modifier
+                            .thenIf(wasRecentlyOpened) {
+                                size(28.dp)
+                            }
+                    )
+                }
+                IconButton(
+                    onClick = onFinishClick,
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            id = if (bookUi.isFinished) R.drawable.finished else R.drawable.finish
+                        ),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.icons,
+                        modifier = Modifier
+                            .thenIf(wasRecentlyOpened) {
+                                size(28.dp)
+                            }
+                    )
+                }
+                IconButton(
+                    onClick = onShareClick,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.share),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.icons,
+                        modifier = Modifier
+                            .thenIf(wasRecentlyOpened) {
+                                size(28.dp)
+                            }
+                    )
+                }
+            }
+            IconButton(
+                onClick = onDeleteClick,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.rounded_delete_24),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.icons,
+                    modifier = Modifier
+                        .thenIf(wasRecentlyOpened) {
+                            size(28.dp)
+                        }
+                )
             }
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFF, device = TABLET)
+@Preview(showBackground = true, backgroundColor = 0xFFFFFF, device = PHONE)
 @Composable
 private fun LibraryBookCardPreview() {
     PageKeeperTheme {
@@ -249,7 +315,8 @@ private fun LibraryBookCardPreview() {
             onFinishClick = {},
             onShareClick = {},
             onDeleteClick = {},
-            wasRecentlyOpened = true
+            wasRecentlyOpened = false,
+            isMenuOpened = true
         )
     }
 }

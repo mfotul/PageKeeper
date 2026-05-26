@@ -1,5 +1,6 @@
 package com.example.pagekeeper.pages.data.library
 
+import com.example.pagekeeper.core.database.book_element_relation.BookWithBookmarksCount
 import com.example.pagekeeper.core.database.book_element_relation.BookWithElementCount
 import com.example.pagekeeper.core.database.pages.library.BookEntity
 import com.example.pagekeeper.pages.domain.library.Book
@@ -59,4 +60,23 @@ fun BookWithElementCount.toBook(): Book {
      elementCount = elementCount,
      bookId = book.bookId
  )
+}
+
+fun BookWithBookmarksCount.toBook(): Book {
+    return Book(
+        title = book.title,
+        author = book.author,
+        bookPath = book.bookPath,
+        coverPath = book.coverPath,
+        documentId = book.documentId,
+        isFavorite = book.isFavorite,
+        isFinished = book.isFinished,
+        isSelected = book.isSelected,
+        readingPositionIndex = book.readingPositionIndex,
+        readingPositionOffset = book.readingPositionOffset,
+        readingProgress = book.readingProgress,
+        addedAt = Instant.ofEpochMilli(book.addedAt),
+        bookmarkCount = bookmarkCount,
+        bookId = book.bookId
+    )
 }

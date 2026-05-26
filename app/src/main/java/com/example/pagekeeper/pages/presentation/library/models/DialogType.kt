@@ -5,5 +5,6 @@ enum class DialogType {
     DUPLICATE_DOCUMENT,
     DELETE,
     LOADING,
-    NONE
+    NONE,
+    DELETE_BOOKMARKS
 }
