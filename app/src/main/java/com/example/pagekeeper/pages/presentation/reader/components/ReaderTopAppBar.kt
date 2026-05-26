@@ -2,8 +2,6 @@
 
 package com.example.pagekeeper.pages.presentation.reader.components
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,13 +15,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pagekeeper.R
 import com.example.pagekeeper.core.presentation.designsystem.theme.PageKeeperTheme
 import com.example.pagekeeper.core.presentation.designsystem.theme.bgBottomNav
 import com.example.pagekeeper.core.presentation.designsystem.theme.icons
-import com.example.pagekeeper.pages.presentation.util.thenIf
 
 @Composable
 fun ReaderTopAppBar(
