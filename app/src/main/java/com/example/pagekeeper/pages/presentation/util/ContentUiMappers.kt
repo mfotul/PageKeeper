@@ -17,6 +17,6 @@ fun Chapter.toChapterUi(): ChapterUi {
     return ChapterUi(
         elementId = elementId,
         title = title.toTitleString(),
-        isSelected = false
+        isSelected = false,
     )
 }

@@ -11,5 +11,7 @@ data class BookmarksState(
     val dialogOpen: DialogType = DialogType.NONE,
     val isColorDropDownMenuOpen: Boolean = false,
     val actionDropDownMenuOpen: BookmarkUi? = null,
-    val pendingBookmarkId: Int? = null
+    val pendingBookmarkId: Int? = null,
+    val titleForNewBookmark: String? = null,
+    val elementOnTopId: Long? = null,
 )

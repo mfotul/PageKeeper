@@ -11,7 +11,7 @@ sealed interface NavigationRoute : NavKey {
     data class ReaderScreen(val bookId: Long) : NavigationRoute, NavKey
 
     @Serializable
-    data class NavigationScreen(val bookId: Long, val elementId: Long?) : NavigationRoute, NavKey
+    data class NavigationScreen(val bookId: Long) : NavigationRoute, NavKey
 
     @Serializable
     data class BookmarksScreen(val bookId: Long) : NavigationRoute, NavKey

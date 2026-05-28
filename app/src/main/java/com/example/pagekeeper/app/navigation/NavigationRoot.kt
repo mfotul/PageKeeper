@@ -43,10 +43,12 @@ fun NavigationRoot(
             entry<NavigationRoute.ReaderScreen> { route ->
                 ReaderScreenRoot(
                     onBackClick = {
-                        backStack.removeLastOrNull()
+                        if (backStack.size > 1) {
+                            backStack.subList(1, backStack.size).clear()
+                        }
                     },
-                    onChapterClick = { bookId, elementId ->
-                        backStack.add(NavigationRoute.NavigationScreen(bookId, elementId))
+                    onChapterClick = { bookId ->
+                        backStack.add(NavigationRoute.NavigationScreen(bookId))
                     },
                     onBookmarksClick = { bookId ->
                         backStack.add(NavigationRoute.BookmarksScreen(bookId))
@@ -62,7 +64,7 @@ fun NavigationRoot(
                         backStack.removeLastOrNull()
                     },
                     resultStore = resultStore,
-                    viewModel = koinViewModel { parametersOf(route.bookId, route.elementId) }
+                    viewModel = koinViewModel { parametersOf(route.bookId) }
                 )
             }
             entry<NavigationRoute.BookmarksScreen> { route ->

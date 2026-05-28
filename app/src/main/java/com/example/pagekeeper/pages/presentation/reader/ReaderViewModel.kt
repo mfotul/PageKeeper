@@ -134,6 +134,7 @@ class ReaderViewModel(
                 readingPositionIndex = action.readingPositionIndex,
                 readingPositionOffset = action.readingPositionOffset,
                 readingProgress = action.readingProgress,
+                currentElementOnTop = action.currentElementOnTop,
                 event = ReaderEvent.OnBackClick
             )
 
@@ -150,12 +151,13 @@ class ReaderViewModel(
                 changeFontSize = false,
             )
 
-            is ReaderAction.OnChapterClick -> onChapterClick(action.currentElementOnTop)
+            is ReaderAction.OnChapterClick -> onChapterClick()
             is ReaderAction.OnChapterSelected -> onChapterSelected(action.index)
             is ReaderAction.OnBookmarksClick -> onSaveAndNavigate(
                 readingPositionIndex = action.readingPositionIndex,
                 readingPositionOffset = action.readingPositionOffset,
                 readingProgress = action.readingProgress,
+                currentElementOnTop = action.currentElementOnTop,
                 event = ReaderEvent.OnBookmarksClick(bookId)
             )
         }
@@ -167,9 +169,9 @@ class ReaderViewModel(
         }
     }
 
-    private fun onChapterClick(currentElementOnTop: ElementUi?) {
+    private fun onChapterClick() {
         viewModelScope.launch {
-            eventChannel.send(ReaderEvent.OnChapterClick(bookId, currentElementOnTop?.elementId))
+            eventChannel.send(ReaderEvent.OnChapterClick(bookId))
         }
     }
 
@@ -177,6 +179,7 @@ class ReaderViewModel(
         readingPositionIndex: Int,
         readingPositionOffset: Int,
         readingProgress: Float,
+        currentElementOnTop: ElementUi?,
         event: ReaderEvent
     ) {
         viewModelScope.launch {
@@ -188,7 +191,8 @@ class ReaderViewModel(
                         book = book.copy(
                             readingPositionIndex = readingPositionIndex,
                             readingPositionOffset = readingPositionOffset,
-                            readingProgress = readingProgress
+                            readingProgress = readingProgress,
+                            currentElementId = currentElementOnTop?.elementId
                         )
                     )
                 }

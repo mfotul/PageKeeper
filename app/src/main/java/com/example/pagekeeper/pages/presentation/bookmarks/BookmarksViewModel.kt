@@ -7,9 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.pagekeeper.pages.domain.bookmarks.Bookmark
 import com.example.pagekeeper.pages.domain.library.PageDataSource
 import com.example.pagekeeper.pages.presentation.bookmarks.models.BookmarkUi
-import com.example.pagekeeper.pages.presentation.models.ColorItem
 import com.example.pagekeeper.pages.presentation.bookmarks.models.DialogType
-import com.example.pagekeeper.pages.presentation.util.findChapterJustLower
+import com.example.pagekeeper.pages.presentation.models.ChapterUi
+import com.example.pagekeeper.pages.presentation.models.ColorItem
 import com.example.pagekeeper.pages.presentation.util.toBookmarkUi
 import com.example.pagekeeper.pages.presentation.util.toChapterUi
 import com.example.pagekeeper.pages.presentation.util.toFb2BlockElementUi
@@ -51,7 +51,6 @@ class BookmarksViewModel(
     val events = eventChannel.receiveAsFlow()
 
     val titleState = TextFieldState()
-    private var titleForNewBookmark = ""
 
     fun loadInitialData() {
         viewModelScope.launch {
@@ -63,10 +62,15 @@ class BookmarksViewModel(
                         .observeElementByBookIdAndPosition(bookId, book.readingPositionIndex + 1)
                         .firstOrNull() ?: return@launch
 
-                    titleForNewBookmark = element
-                        .content
-                        .toFb2BlockElementUi()
-                        .toTitleString()
+                    _state.update {
+                        it.copy(
+                            titleForNewBookmark = element
+                                .content
+                                .toFb2BlockElementUi()
+                                .toTitleString(),
+                            elementOnTopId = book.currentElementId
+                        )
+                    }
                 }
         }
 
@@ -179,7 +183,8 @@ class BookmarksViewModel(
                             pageDataSource.upsertBookmark(
                                 it.copy(
                                     title = titleState.text.toString(),
-                                    colorItem = state.selectedColorItem.name
+                                    colorItem = state.selectedColorItem.name,
+                                    creationTime = Instant.now()
                                 )
                             )
                         }
@@ -192,11 +197,11 @@ class BookmarksViewModel(
                                 .observeContentsByBookId(bookId)
                                 .firstOrNull()
                                 ?.flatMap { it.chapters }
-                                ?.map { it.toChapterUi() }
+                                ?.map { chapter -> chapter.toChapterUi() }
                                 ?: emptyList()
 
                             val chapter =
-                                findChapterJustLower(chapters, book.readingPositionIndex.toLong())
+                                findChapter(chapters, state.elementOnTopId)
                                     ?.title[0]
                                     ?: book.title
 
@@ -234,7 +239,7 @@ class BookmarksViewModel(
         _state.update { state ->
             titleState.edit {
                 delete(0, length)
-                append(titleForNewBookmark)
+                append(state.titleForNewBookmark)
             }
             state.copy(
                 dialogOpen = DialogType.ADD,
@@ -274,4 +279,14 @@ class BookmarksViewModel(
         }
     }
 
+    private fun findChapter(chapters: List<ChapterUi>, targetId: Long?): ChapterUi? {
+        val index = chapters.binarySearchBy(targetId) { it.elementId }
+        val chapterIndex = if (index >= 0)
+            index
+        else {
+            val insertionPoint = index.inv()
+            insertionPoint - 1
+        }
+        return chapters.getOrNull(chapterIndex)
+    }
 }

@@ -18,5 +18,6 @@ data class BookEntity(
     val readingPositionIndex: Int,
     val readingPositionOffset: Int,
     val readingProgress: Float,
+    val currentElementId: Long?,
     val addedAt: Long,
 )

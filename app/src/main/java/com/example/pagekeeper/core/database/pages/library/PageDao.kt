@@ -53,6 +53,7 @@ interface PageDao {
     """)
     fun searchBooksByTitle(search: String): Flow<List<BookEntity>>
 
+    @Transaction
     @Query("""
         SELECT *, 
         (SELECT COUNT(*) FROM elemententity WHERE bookId = :id) AS elementCount 
@@ -61,6 +62,7 @@ interface PageDao {
     """)
     fun getBookTitleWithCount(id: Long): Flow<BookWithElementCount?>
 
+    @Transaction
     @Query("""
         SELECT b.*, COUNT(be.bookId) AS bookmarkCount
         FROM bookentity b

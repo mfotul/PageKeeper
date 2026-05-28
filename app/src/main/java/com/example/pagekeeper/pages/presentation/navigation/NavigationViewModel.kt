@@ -5,15 +5,18 @@ package com.example.pagekeeper.pages.presentation.navigation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pagekeeper.pages.domain.library.PageDataSource
+import com.example.pagekeeper.pages.presentation.models.ChapterUi
 import com.example.pagekeeper.pages.presentation.navigation.models.ContentUi
-import com.example.pagekeeper.pages.presentation.util.findChapterJustLower
 import com.example.pagekeeper.pages.presentation.util.toContentUi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -23,7 +26,6 @@ import kotlinx.coroutines.launch
 
 class NavigationViewModel(
     private val bookId: Long,
-    private val elementId: Long?,
     private val pageDataSource: PageDataSource
 ) : ViewModel() {
     private var hasLoadedInitialData = false
@@ -47,8 +49,16 @@ class NavigationViewModel(
 
     private fun loadDefaultData() {
         pageDataSource
-            .observeContentsByBookId(bookId)
-            .onEach { contents ->
+            .observeBookById(bookId)
+            .flatMapLatest { book ->
+                if (book != null)
+                    pageDataSource.observeContentsByBookId(bookId).map { contents ->
+                        contents to book.currentElementId
+                    }
+                else
+                    emptyFlow()
+            }
+            .onEach { (contents, elementId) ->
                 if (elementId == null) return@onEach
 
                 val (expandedContentId, contentWithTargetChapter) = contentWithSelectedChapter(
@@ -113,5 +123,16 @@ class NavigationViewModel(
             content.copy(chapters = chapters)
         }
         return expandedContentId to contentWithTargetChapter
+    }
+
+    private fun findChapterJustLower(chapters: List<ChapterUi>, targetId: Long?): ChapterUi? {
+        val index = chapters.binarySearchBy(targetId) { it.elementId }
+        val lowerIndex = if (index >= 0) {
+            index - 1
+        } else {
+            val insertionPoint = index.inv()
+            insertionPoint - 1
+        }
+        return chapters.getOrNull(lowerIndex)
     }
 }

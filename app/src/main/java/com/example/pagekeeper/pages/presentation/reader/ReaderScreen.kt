@@ -69,6 +69,7 @@ import com.example.pagekeeper.pages.presentation.reader.components.ReaderBottomS
 import com.example.pagekeeper.pages.presentation.reader.components.ReaderLinearProgressIndicator
 import com.example.pagekeeper.pages.presentation.reader.components.ReaderTopAppBar
 import com.example.pagekeeper.pages.presentation.reader.models.ElementUi
+import com.example.pagekeeper.pages.presentation.util.getCurrentElementOnTop
 import com.example.pagekeeper.pages.presentation.util.thenIf
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
@@ -78,7 +79,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun ReaderScreenRoot(
     onBackClick: () -> Unit,
-    onChapterClick: (Long, Long?) -> Unit,
+    onChapterClick: (Long) -> Unit,
     onBookmarksClick: (Long) -> Unit,
     resultStore: ResultStore,
     viewModel: ReaderViewModel = koinViewModel()
@@ -103,11 +104,12 @@ fun ReaderScreenRoot(
         when (event) {
             ReaderEvent.OnBackClick -> onBackClick()
             is ReaderEvent.OnChapterClick -> onChapterClick(
-                event.bookId,
-                event.currentElementIdOnTop
+                event.bookId
             )
 
-            is ReaderEvent.OnBookmarksClick -> onBookmarksClick(event.bookId)
+            is ReaderEvent.OnBookmarksClick -> onBookmarksClick(
+                event.bookId
+            )
         }
     }
 
@@ -150,7 +152,11 @@ fun ReaderScreen(
             ReaderAction.OnBackClick(
                 readingPositionIndex = listState.firstVisibleItemIndex,
                 readingPositionOffset = listState.firstVisibleItemScrollOffset,
-                readingProgress = progress
+                readingProgress = progress,
+                currentElementOnTop = getCurrentElementOnTop(
+                    listState,
+                    lazyPagingItems
+                )
             )
         )
     }
@@ -213,7 +219,11 @@ fun ReaderScreen(
                             ReaderAction.OnBackClick(
                                 readingPositionIndex = listState.firstVisibleItemIndex,
                                 readingPositionOffset = listState.firstVisibleItemScrollOffset,
-                                readingProgress = progress
+                                readingProgress = progress,
+                                currentElementOnTop = getCurrentElementOnTop(
+                                    listState,
+                                    lazyPagingItems
+                                )
                             )
                         )
                     },
@@ -330,19 +340,18 @@ fun ReaderScreen(
                         onRotateClick = { onAction(ReaderAction.OnLockScreenClick) },
                         onFonSizeClick = { onAction(ReaderAction.OnFontSizeClick) },
                         onChaptersClick = {
-                            val index = listState.firstVisibleItemIndex
-                            val elementUi = if (index < lazyPagingItems.itemCount)
-                                lazyPagingItems[index]
-                            else
-                                null
-                            onAction(ReaderAction.OnChapterClick(elementUi))
+                            onAction(ReaderAction.OnChapterClick)
                         },
                         onBookmarksClick = {
                             onAction(
                                 ReaderAction.OnBookmarksClick(
                                     readingPositionIndex = listState.firstVisibleItemIndex,
                                     readingPositionOffset = listState.firstVisibleItemScrollOffset,
-                                    readingProgress = progress
+                                    readingProgress = progress,
+                                    currentElementOnTop = getCurrentElementOnTop(
+                                        listState,
+                                        lazyPagingItems
+                                    )
                                 )
                             )
                         }

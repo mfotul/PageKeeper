@@ -21,6 +21,7 @@ fun Book.toBookEntity(): BookEntity {
         readingPositionIndex = readingPositionIndex,
         readingPositionOffset = readingPositionOffset,
         readingProgress = readingProgress,
+        currentElementId = currentElementId,
         addedAt = addedAt.toEpochMilli()
     )
 }
@@ -39,6 +40,7 @@ fun BookEntity.toBook(): Book {
         readingPositionIndex = readingPositionIndex,
         readingPositionOffset = readingPositionOffset,
         readingProgress = readingProgress,
+        currentElementId = currentElementId,
         addedAt = Instant.ofEpochMilli(addedAt),
     )
 }
@@ -56,6 +58,7 @@ fun BookWithElementCount.toBook(): Book {
      readingPositionIndex = book.readingPositionIndex,
      readingPositionOffset = book.readingPositionOffset,
      readingProgress = book.readingProgress,
+     currentElementId = book.currentElementId,
      addedAt = Instant.ofEpochMilli(book.addedAt),
      elementCount = elementCount,
      bookId = book.bookId
@@ -75,6 +78,7 @@ fun BookWithBookmarksCount.toBook(): Book {
         readingPositionIndex = book.readingPositionIndex,
         readingPositionOffset = book.readingPositionOffset,
         readingProgress = book.readingProgress,
+        currentElementId = book.currentElementId,
         addedAt = Instant.ofEpochMilli(book.addedAt),
         bookmarkCount = bookmarkCount,
         bookId = book.bookId

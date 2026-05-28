@@ -39,13 +39,11 @@ class Fb2XmlParser(
         val title: String,
         val authors: List<String>,
         val documentId: String,
-        val coverPage: String
     )
 
     private data class TitleInfo(
         val title: String,
         val authors: List<String>,
-        val coverPage: String,
     )
 
     override suspend fun parseBook(uri: Uri): Result<Book, ParserError> {
@@ -60,7 +58,8 @@ class Fb2XmlParser(
                 val documentIds = pageDataSource.observeDocumentsId().firstOrNull() ?: emptyList()
                 File(tempFilePath).inputStream().buffered().use { bufferedStream ->
                     val parser = Xml.newPullParser().apply {
-                        setInput(bufferedStream, null)
+                        setInput(bufferedStream, "UTF-8")
+                        setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
                     }
 
                     parser.nextTag()
@@ -128,16 +127,17 @@ class Fb2XmlParser(
                 if (!bookFile.exists()) return@withContext Result.Error(ParserError.IO_ERROR)
 
                 applicationScope.launch {
-                   withContext(Dispatchers.IO) {
-                       bookFile.inputStream().buffered(32 * 1024).use { bufferedStream ->
-                           val parser = Xml.newPullParser().apply {
-                               setInput(bufferedStream, "UTF-8")
-                           }
-                           parser.next()
-                           parseBookBody(parser, book.bookId!!)
-                       }
-                       generateContents(bookId)
-                   }
+                    withContext(Dispatchers.IO) {
+                        bookFile.inputStream().buffered().use { bufferedStream ->
+                            val parser = Xml.newPullParser().apply {
+                                setInput(bufferedStream, "UTF-8")
+                                setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
+                            }
+                            parser.next()
+                            parseBookBody(parser, book.bookId!!)
+                        }
+                        generateContents(bookId)
+                    }
                 }
                 Result.Success(Unit)
             } catch (e: XmlPullParserException) {
@@ -164,7 +164,7 @@ class Fb2XmlParser(
 
             when (parser.name) {
                 "description" -> metadata = parseDescription(parser)
-                "binary" -> coverPath = parseBinary(parser, metadata?.coverPage)
+                "binary" -> coverPath = coverPath ?: parseBinary(parser)
                 else -> skip(parser)
             }
         }
@@ -179,7 +179,8 @@ class Fb2XmlParser(
                 documentId = metadata.documentId,
                 readingPositionIndex = 0,
                 readingPositionOffset = 0,
-                readingProgress = 0f
+                readingProgress = 0f,
+                currentElementId = 0
             )
         }
     }
@@ -188,7 +189,6 @@ class Fb2XmlParser(
         var title = ""
         val authors = mutableListOf<String>()
         var documentId = ""
-        var coverPage = ""
 
         parser.require(XmlPullParser.START_TAG, null, "description")
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -198,7 +198,6 @@ class Fb2XmlParser(
                 "title-info" -> {
                     val info = parseTitleInfo(parser)
                     title = info.title
-                    coverPage = info.coverPage
                     authors.addAll(info.authors)
                 }
 
@@ -206,13 +205,12 @@ class Fb2XmlParser(
                 else -> skip(parser)
             }
         }
-        return Metadata(title, authors, documentId, coverPage)
+        return Metadata(title, authors, documentId)
     }
 
     private fun parseTitleInfo(parser: XmlPullParser): TitleInfo {
         var title = ""
         val authors = mutableListOf<String>()
-        var coverPage = ""
 
         parser.require(XmlPullParser.START_TAG, null, "title-info")
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -221,11 +219,10 @@ class Fb2XmlParser(
             when (parser.name) {
                 "book-title" -> title = parser.nextText()
                 "author" -> authors.add(parseAuthor(parser))
-                "coverpage" -> coverPage = parseCover(parser)
                 else -> skip(parser)
             }
         }
-        return TitleInfo(title, authors, coverPage)
+        return TitleInfo(title, authors)
     }
 
     private fun parseAuthor(parser: XmlPullParser): String {
@@ -249,25 +246,6 @@ class Fb2XmlParser(
             .joinToString(" ")
     }
 
-    private fun parseCover(parser: XmlPullParser): String {
-        var href = ""
-        parser.require(XmlPullParser.START_TAG, null, "coverpage")
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.eventType != XmlPullParser.START_TAG) continue
-
-            when (parser.name) {
-                "image" -> {
-                    href = parser.getAttributeValue(null, "href")
-                        .removePrefix("#")
-                    parser.nextTag()
-                }
-
-                else -> skip(parser)
-            }
-        }
-        return href
-    }
-
     private fun parseDocumentInfo(parser: XmlPullParser): String {
         var id = ""
         parser.require(XmlPullParser.START_TAG, null, "document-info")
@@ -284,19 +262,14 @@ class Fb2XmlParser(
 
     private suspend fun parseBinary(
         parser: XmlPullParser,
-        coverPage: String?
     ): String? {
         parser.require(XmlPullParser.START_TAG, null, "binary")
-        val id = parser.getAttributeValue(null, "id")
-        var imagePath: String? = null
+        var imagePath: String?
 
-        if (id == coverPage) {
-            val base64String = parser.nextText().trim()
-            val imageBytes = Base64.decode(base64String, Base64.DEFAULT)
-            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-            imagePath = libraryStorage.saveBookImageTemporarily(bitmap)
-        } else
-            skip(parser)
+        val base64String = parser.nextText().trim()
+        val imageBytes = Base64.decode(base64String, Base64.DEFAULT)
+        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+        imagePath = libraryStorage.saveBookImageTemporarily(bitmap)
 
         return imagePath
     }

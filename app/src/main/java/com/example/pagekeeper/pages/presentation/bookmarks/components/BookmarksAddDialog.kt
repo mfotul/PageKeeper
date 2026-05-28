@@ -136,7 +136,7 @@ fun BookmarksAddDialogContent(
                     replace(
                         start = 0,
                         end = length,
-                        text = proposedText.substring(0, cutIndex - if (isLonger) 2 else 0)
+                        text = proposedText.substring(0, cutIndex - if (isLonger) 3 else 0)
                     )
                     if (isLonger) append("...")
                 }
